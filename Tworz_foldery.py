@@ -11,7 +11,7 @@ class LabelInApp(tk.Label):
         paddings = {'padx': 10, 'pady': 10}
         backgroundColor = {'bg': '#1E1E1E'}
         super().__init__()
-        label = tk.Label(root, backgroundColor, text = txt, fg='white', font=font1)\
+        label = tk.Label(root, backgroundColor, text = txt, fg='white', font=font1, anchor='nw')\
             .grid(paddings, sticky='w', row=row, column=column, columnspan=columspan)
 
 class ButtonInApp(tk.Button):
@@ -40,7 +40,7 @@ class AppliactionCFWDFL(tk.Tk):
         self.resizable(width=True, height=True)
         self.windowingsystem = 'win32'
         self.configure(backgroundColor)
-        #self.tk_setPalette(backgroundm = 'red')
+
         self.createWidgets()
 
     def createWidgets(self) -> None:
@@ -55,44 +55,57 @@ class AppliactionCFWDFL(tk.Tk):
 
         #Ramak w oknie aplikacji 
         self.frame = tk.Frame(self, backgroundColor, width=600, height=300)\
-            .grid(columnspan=6, rowspan=6)
+            .grid(columnspan=6, rowspan=8)
         frame = self.frame
 
+        #instrukcje
+        self.instructions = LabelInApp(frame, 0, 0, 6,\
+            txt="""Program tworzy foldery z danymi wejściowymi do lammpsa, na podstawie wzoru tlenkowego szkła. 
+            """)
+
+
         #pierwszy rząd przycisków 
-        self.label1 = LabelInApp(frame, 0, 0, 3, txt = "Znajdź katalog w którym "\
+        self.label1 = LabelInApp(frame, 1, 0, 3, txt = "Znajdź katalog w którym "\
              "mają być zapisane dane:")
-        self.button1 = ButtonInApp(frame, 0, 3, 3, txt = "Wskaż katalog")
+        self.button1 = ButtonInApp(frame, 1, 3, 3, txt = "Wskaż katalog")
 
         #drugi rząd przycisków
-        self.label2 = LabelInApp(frame, 1, 0, 3, txt = "Twoja nazwa folderu:")
-        self.input1 = tk.Entry(frame, width=20, font = font2).grid(paddings, sticky = 'w', row = 1, column = 3, columnspan=3)
+        self.label2 = LabelInApp(frame, 2, 0, 3, txt = "Twoja nazwa folderu:")
+        self.input1 = tk.Entry(frame, width=20, font = font2).grid(paddings, sticky = 'w', row = 2, column = 3, columnspan=3)
 
         #trzeci rząd przycisków
-        self.label3 = LabelInApp(frame, 2, 0, 3, txt = "Wpisz prefix dla podfolderów:")
-        self.input2 = tk.Entry(frame, width=20, font = font2).grid(paddings, sticky = 'w', row = 2, column = 3, columnspan=3)
+        self.label3 = LabelInApp(frame, 3, 0, 3, txt = "Wpisz prefix dla podfolderów:")
+        self.input2 = tk.Entry(frame, width=20, font = font2).grid(paddings, sticky = 'w', row = 3, column = 3, columnspan=3)
+
+        #instrukcja dla wzoru szkła
+        self.instructions2 = tk.Message(frame, width=850, font=font2,
+            text="Wprowadzony wzór szkął powiien byc w postaci: x Na2O ( 1 - x ) * ( 0.3 Fe2O3 0.7 P2O5 ). \n" \
+            "Pamiętaj o spacjach!, dozwolone symbole matematyczne: +, -, *. \n" \
+            "We wzorze znajdują się stosunki molowe.")\
+                .grid(paddings, row = 4, column = 0, sticky = 'w', columnspan=6)
 
         #czwarty rząd przycisków
-        self.label4 = LabelInApp(frame, 3, 0, 3, txt = "Podaj wzór szkła:")
+        self.label4 = LabelInApp(frame, 5, 0, 3, txt = "Podaj wzór szkła:")
         self.inputGlassFormula = tk.Entry(frame, width=50, font = font1)\
-            .grid(paddings, sticky = 'w', row = 3, column = 3, columnspan=3)
+            .grid(paddings, sticky = 'w', row = 5, column = 3, columnspan=3)
 
         #Piąty rząd przycisków
         self.frame2 = tk.Frame(frame, backgroundColor,  width=600, height=25)\
-            .grid(row=4, column=0, columnspan=6, rowspan=1)
+            .grid(row=6, column=0, columnspan=6, rowspan=1)
         frame2 = self.frame2
-        self.label5 = LabelInApp(frame2, 4, 0, txt = "Poczatkowa wartość x:")
-        self.inputStartX = tk.Entry(frame2, width=10, font = font2).grid(paddings, row = 4, column = 1, sticky = 'w')
-        self.label6 = LabelInApp(frame2, 4, 2, txt = "Poczatkowa wartość x:")
-        self.inputStepX = tk.Entry(frame2, width=10, font = font2).grid(paddings, row = 4, column = 3, sticky = 'w')
-        self.label7 = LabelInApp(frame2, 4, 4, txt = "Poczatkowa wartość x:")
-        self.inputNumberOfSteps = tk.Entry(frame2, width=10, font = font2).grid(paddings, row = 4, column = 5, sticky = 'w')
+        self.label5 = LabelInApp(frame2, 6, 0, txt = "Poczatkowa wartość x:")
+        self.inputStartX = tk.Entry(frame2, width=10, font = font2).grid(paddings, row = 6, column = 1, sticky = 'w')
+        self.label6 = LabelInApp(frame2, 6, 2, txt = "Wartość kroku:")
+        self.inputStepX = tk.Entry(frame2, width=10, font = font2).grid(paddings, row = 6, column = 3, sticky = 'w')
+        self.label7 = LabelInApp(frame2, 6, 4, txt = "ilość szkieł:")
+        self.inputNumberOfSteps = tk.Entry(frame2, width=10, font = font2).grid(paddings, row = 6, column = 5, sticky = 'w')
 
         #Szusty rząd przycisków
 
 
         #ostatni rząd przycisków 
-        self.StartButton = ButtonInApp(frame, 6, 0, 3, 'E', txt = "Start")
-        self.quitButton = ButtonInApp(frame, 6, 3, 3, txt = "Zakończ", functionApp = self.quit)
+        self.StartButton = ButtonInApp(frame, 7, 0, 3, 'E', txt = "Start")
+        self.quitButton = ButtonInApp(frame, 7, 3, 3, txt = "Zakończ", functionApp = self.quit)
 
 
 application = AppliactionCFWDFL()
