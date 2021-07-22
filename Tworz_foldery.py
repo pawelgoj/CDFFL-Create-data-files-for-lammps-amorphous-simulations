@@ -50,7 +50,7 @@ class AppliactionCFWDFL(tk.Tk):
         self.resizable(width=True, height=True)
         self.windowingsystem = 'win32'
         self.config(backgroundColor)
-
+        self.geometry("1050x500")
         self.createWidgets()
 
     def createWidgets(self) -> None:
@@ -67,24 +67,33 @@ class AppliactionCFWDFL(tk.Tk):
 
 
         #Ramak w oknie aplikacji/pasek przewijania 
+
+        self.mainFrame = tk.Frame(self, backgroundColor)
+
+        mainFrame = self.mainFrame
+        mainFrame.pack(side='left', fill='both', expand=1)
+
+        self.mainCanvas = tk.Canvas(mainFrame, backgroundColor, highlightthickness=0)
+        mainCanvas = self.mainCanvas
+        mainCanvas.pack(side='left', fill='both', expand=1)
         
-        self.scrollBar = ttk.Scrollbar(self, orient='vertical')\
-            .grid(column=7, row=0, rowspa=8, sticky='ns')
-        #yscrollcommand = scrollBar.set)\
-        '''self.frame = tk.Canvas(self, backgroundColor, width=600, height=300)\
-            .grid(column=0, row=0, columnspan=6, rowspan=8, sticky = 'NW')
-        frame = self.frame
-        self.scrollBar.config(command=canvas.yview)'''
-    
+        self.scrollBar = ttk.Scrollbar(mainFrame, orient='vertical', command=mainCanvas.yview)
+        scrollBar = self.scrollBar
+        scrollBar.pack(side='right', fill='y')
+
+        mainCanvas.config(yscrollcommand=scrollBar.set)
+        mainCanvas.bind('<Configure>', lambda e: mainCanvas.config(scrollregion = mainCanvas.bbox("all")))
+        
+        self.secondFrame = tk.Frame(mainCanvas, backgroundColor)
+        secondFrame = self.secondFrame
+        mainCanvas.create_window((0,0), window=secondFrame, anchor="nw")
 
 
-           
-        self.frame = tk.Frame(self, backgroundColor, width=600, height=300)
+
+        self.frame = tk.Frame(secondFrame, backgroundColor, width=600, height=300)
         self.frame.grid(column=0, row=0, columnspan=6, rowspan=8, sticky = 'NW')
         frame = self.frame
         
-        
-
         #instrukcje
         self.instructions = LabelInApp(frame, 0, 0, 6,\
             txt="""Program tworzy foldery z danymi wejściowymi do lammpsa, na podstawie wzoru tlenkowego szkła. 
@@ -136,7 +145,8 @@ class AppliactionCFWDFL(tk.Tk):
         self.frame3 = tk.Frame(frame, backgroundColor,  width=600, height=40)
         self.frame3.grid(row=7, column=0, columnspan=6, rowspan=1)
         frame3 = self.frame3
-        self.instructions2 = tk.Message(frame3, backgroundColor, width=800, font=font2, fg = 'white',\
+        self.instructions2 = tk.Message(frame3, backgroundColor, width=800, font=font2,\
+            fg = 'white',\
             text="testowy")
         self.instructions2.grid(paddings, row = 7, column = 2, columnspan=2)
 
