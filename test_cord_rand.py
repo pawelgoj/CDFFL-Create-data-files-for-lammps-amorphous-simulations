@@ -4,6 +4,7 @@ import cord_rand
 import os.path
 import shutil
 import os
+from fractions import Fraction
 
 
 #Given
@@ -22,8 +23,10 @@ class BaseTest:
         path = os.path.join(self.file_path)
         os.mkdir(path)
         yield self.file_path
-
-        shutil.rmtree(self.file_path)
+        try:
+            shutil.rmtree(self.file_path)
+        except:
+            pass
 
 
 @pytest.mark.usefixtures("setup")
@@ -89,49 +92,87 @@ class Testcord_rand(BaseTest):
     @allure.description_html("""
     <p>Get proportions of Oxides from equation</p>
     """)
+    @pytest.mark.noautofixt
     @pytest.mark.parametrize(
-    'data,manyGlasses,step,respose', 
+    'data,manyGlasses,xValue,respose', 
     [
         ('x Na2O ( 1 - x ) ( 0.7 P2O5 0.3 Fe2O3 )', True, 0.5, {'Na2O': 0.5, 'P2O5': 0.35, 'Fe2O3': 0.15}),
         ('0.7 P2O5 0.3 Fe2O3 0.2 Na2O', False, 0.5, {'P2O5': 0.7, 'Fe2O3': 0.3, 'Na2O': 0.2}),
         ('x P2O5 ( 0.8 - x ) Fe2O3 0.2 Na2O', True, 0.5, {'P2O5': 0.5, 'Fe2O3': 0.3, 'Na2O': 0.2})
     ]
     )
-    def test_get_proportions_of_oxides(self, data, manyGlasses, step, respose):
+    def test_get_proportions_of_oxides(self, data, manyGlasses, xValue, respose):
         #Given
-        foo = cord_rand.Equation_of_material(data, manyGlasses, 1, step)
+        foo = cord_rand.EquationOfMaterial(data, manyGlasses, xValue)
         #When
-        proportionsOfOxides = foo.get_proportions_of_oxides(xValue = step)
+        proportionsOfOxides = foo.get_proportions_of_oxides()
 
         #Then
         assert respose == proportionsOfOxides
 
-    @allure.title("Get atoms from oxide")    
+    
+    @allure.title("Calculate atoms from oxide")    
     @allure.description_html("""
-    <p>Get atoms from oxide</p>
+    <p>Calculate atoms from oxide</p>
     """)
-    def test_get_atoms_from_oxide(self):
+    @pytest.mark.noautofixt
+    @pytest.mark.parametrize('data,result',
+    [
+        ('Fe2O3',{'Fe': (2, 'Cation', 'O', Fraction(3, 2)), 'O': (3, 'Anion')}),
+        ('Na2O',{'Na': (2, 'Cation', 'O', Fraction(1, 2)), 'O': (1, 'Anion')}),
+        ('CaO',{'Ca': (1, 'Cation', 'O', Fraction(1, 1)), 'O': (1, 'Anion')}),
+        ('CO',{'C': (1, 'Cation', 'O', Fraction(1, 1)), 'O': (1, 'Anion')}),
+        ('CO2', {'C': (1, 'Cation', 'O', Fraction(2, 1)), 'O': (2, 'Anion')}),
+        ('SiC', {'Si': (1, 'Cation', 'C', Fraction(1, 1)), 'C': (1, 'Anion')})
+    ])
+    def test_calculate_atoms_from_oxide(self, data, result):
         #Given
-        oxide = 'Fe2O3'
+        oxide = data
         #When
-        atomsDict = cord_rand.Equation_of_material.get_atoms_from_oxide(oxide)
+        atomsDict = cord_rand.EquationOfMaterial.calculate_atoms_from_oxide(oxide)
         #Then
-        assert atomsDict == {'Fe': 2, 'O': 3}
+        assert atomsDict == result
     
     
-    @pytest.mark.skip(reason="No yet this funcionality")
-    @allure.title("Get proportions of atoms")    
+    @allure.title("Calculate proportions of atoms")    
     @allure.description_html("""
-    <p>Get proportions of atoms from proportion of oxides dictionary</p>
+    <p>Calculate proportions of atoms from proportion of oxides dictionary</p>
     """)
+    @pytest.mark.noautofixt
     @pytest.mark.parametrize(
         'data,result',
         [
-        ({'P2O5': 0.5, 'Fe2O3': 0.3, 'Na2O': 0.2},{'P': 0.178571, 'Fe': 0.107143, 'Na': 0.071429, 'O': 0.642857})
+        ({'P2O5': 0.5, 'Fe2O3': 0.3, 'Na2O': 0.1 , 'CaO': 0.05, 'SiO2': 0.05},\
+        {'P': [0.180180, 'Cation', 'O', Fraction(5, 2)], 'Fe': [0.108108, 'Cation','O', Fraction(3, 2)],\
+        'Na': [0.036036, 'Cation', 'O', Fraction(1, 2)], 'Ca': [0.009009, 'Cation', 'O', Fraction(1, 1)],\
+        'Si': [0.009009, 'Cation', 'O', Fraction(2, 1)], 'O': [0.657658, 'Anion']})
         ]
     )
-    def test_get_proportions_of_atoms(self, data, result):
-        assert cord_rand.Equation_of_material.get_proportions_of_atoms(data) == result
+    def test_calculate_proportions_of_atoms(self, data, result):
+        assert cord_rand.EquationOfMaterial.calculate_proportions_of_atoms(data) == result    @allure.title("Get proportions of atoms")    
+
+
+    
+    @allure.description_html("""
+    <p>Get proportions of atoms</p>
+    """)
+    @pytest.mark.noautofixt
+    @pytest.mark.parametrize(
+    'data,manyGlasses,xValue,respose', 
+    [
+        ('x Na2O ( 1 - x ) ( 0.7 P2O5 0.3 Fe2O3 )', True, 0.5, {'Na2O': 0.5, 'P2O5': 0.35, 'Fe2O3': 0.15}),
+        ('0.7 P2O5 0.3 Fe2O3 0.2 Na2O', False, 0.5, {'P2O5': 0.7, 'Fe2O3': 0.3, 'Na2O': 0.2}),
+        ('x P2O5 ( 0.8 - x ) Fe2O3 0.2 Na2O', True, 0.5, {'P2O5': 0.5, 'Fe2O3': 0.3, 'Na2O': 0.2})
+    ]
+    )
+    def test_get_proportions_of_atoms(self, data, manyGlasses, xValue ,respose):
+        #Given
+        foo = cord_rand.EquationOfMaterial(data, manyGlasses, xValue)
+        #When
+        proportionsOfAtoms = foo.get_proportion_of_atoms()
+
+        #Then
+        assert respose == proportionsOfAtoms
 
 
     @pytest.mark.skip(reason="No yet this funcionality")

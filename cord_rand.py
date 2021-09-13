@@ -1,6 +1,7 @@
 
 import os
 import re
+from fractions import Fraction
 
 
 class IncorectFilePath(Exception):
@@ -8,6 +9,9 @@ class IncorectFilePath(Exception):
 
 class NumberOfItemsOnTheListOfOxidesAndCoefficientsIncorrect(Exception):
     pass
+
+class constants:
+    listOfAnions = ['F', 'O', 'Cl', 'Br', 'I', 'C', 'B']
 
 class Folder: 
     def __init__(self, path: str ='', name: str = '', prefix: str = '', nrOfFolders: int = 0):
@@ -34,18 +38,17 @@ class File:
     def __init__(self, path: str=''):
         pass
 
-class Equation_of_material: 
+class EquationOfMaterial: 
 
-    def __init__(self, equation: str, manyGlasses: bool = False, nrSteps: int = 1, step: float = 0):
+    def __init__(self, equation: str, manyGlasses: bool = False, xValue: float = 0):
         self.equation = equation 
-        self.step = step
-        self.nrSteps = nrSteps
         self.manyGlasses = manyGlasses
+        self.xValue = xValue
         
-    def get_proportions_of_oxides(self, xValue : float = 0) -> dict:
+    def get_proportions_of_oxides(self) -> dict:
 
         if self.manyGlasses:
-            replaced = self.equation.replace("x", str(xValue))
+            replaced = self.equation.replace("x", str(self.xValue))
         else: 
             replaced = self.equation
 
@@ -117,33 +120,127 @@ class Equation_of_material:
     
         return proportionsOfOxides
 
-    @staticmethod
-    def get_atoms_from_oxide(oxide: str) -> dict:
 
+    @staticmethod
+    def remove_empty_list_elements(list: list) -> list:
+        return [item for item in list if item != '']
+
+    @staticmethod
+    def round_math_part(number) -> float:
+        return round(float(number), 6)
+    
+    @staticmethod
+    def calculate_ratios(dictionary: dict) -> dict:
+        
+        for value in dictionary.values():
+            try:
+                sum = sum + value[0]
+            except: 
+                sum = value[0] 
+        
+        for key in dictionary.keys():
+            dictionary[key][0] = EquationOfMaterial.round_math_part(dictionary[key][0] / sum)
+
+        return dictionary
+
+   
+    @classmethod
+    def calculate_atoms_from_oxide(cls, oxide: str) -> dict:
+        def check_cation_or_anion(positionInOxideformula: int) -> str:
+            if positionInOxideformula == 0:
+                return 'Cation'
+            elif positionInOxideformula == 1:
+                return 'Anion'  
+            else:
+                raise Exception('You can use only simple compound oxide notation eg. Fe2O3 also SiC is correct')  
+
+        
         mathPart = re.split(r"[a-zA-Z]", oxide)
         textPart = re.split(r"[0-9]", oxide)
 
-        mathPart = [item for item in mathPart if item != '']
-        textPart = [item for item in textPart if item != '']
+        mathPart = cls.remove_empty_list_elements(mathPart)
+        textPart = cls.remove_empty_list_elements(textPart)
 
-        oxideDict = {textPart[i]: round(float(mathPart[i]), 6) for i  in range(len(textPart))}
+
+        if mathPart != [] and len(mathPart) == len(textPart) and len(mathPart) > 1:
+            oxideDict = {}
+            for i in range(len(textPart)):
+                if check_cation_or_anion(i) == 'Cation': 
+                    oxideDict.update({textPart[i]: (cls.round_math_part(mathPart[i]), check_cation_or_anion(i), textPart[i+1],\
+                        Fraction(int(mathPart[i+1]), int(mathPart[i])))})
+                elif check_cation_or_anion(i) == 'Anion':
+                    oxideDict.update({textPart[i]: (cls.round_math_part(mathPart[i]), check_cation_or_anion(i))})
+                else:
+                    raise Exception('Wrong oxide notation!!!!')
+        else:
+            tempDict = {}
+            for item in textPart:
+                i = 0
+                for character in item:
+                    if character.isupper() and i != 0:
+                        beforeCharacter = item[:i]
+                        afterCharacter = item[i:]
+                        if afterCharacter != '' and mathPart == []:
+                            tempDict.update({beforeCharacter: (1, 'Cation', afterCharacter, Fraction(1, 1))})
+                            tempDict.update({afterCharacter: (1, 'Anion')})
+                        elif len(mathPart) == 1:
+                            tempDict.update({beforeCharacter: (1, 'Cation', afterCharacter, Fraction(int(mathPart[0]), 1))})
+                            tempDict.update({afterCharacter: (cls.round_math_part(mathPart[0]), check_cation_or_anion(1))})
+                        else: 
+                            raise Exception('Wrong oxide name!')
+                    i+=1 
+            if tempDict != {}: 
+                oxideDict = tempDict.copy()
+            else: 
+                mathPart.append(1)
+                oxideDict = {}
+                for i in range(len(textPart)):
+                    if check_cation_or_anion(i) == 'Cation': 
+                        oxideDict.update({textPart[i]: (cls.round_math_part(mathPart[i]), check_cation_or_anion(i), textPart[i+1],\
+                            Fraction(int(mathPart[i+1]), int(mathPart[i])))})
+                    elif check_cation_or_anion(i) == 'Anion':
+                        oxideDict.update({textPart[i]: (cls.round_math_part(mathPart[i]), check_cation_or_anion(i))})
+                    else:
+                        raise Exception('Wrong oxide notation!!!!')
+
+            del tempDict
+
         return oxideDict
 
     @classmethod
-    def get_proportions_of_atoms(cls,  proportionsOfOxides: dict) -> dict:
+    def calculate_proportions_of_atoms(cls,  proportionsOfOxides: dict) -> dict:
 
         proportionsOfAtoms = {}
-        for key, value in proportionsOfOxides:
-            atomDict = cls.get_atoms_from_oxide(key)
+        for key in proportionsOfOxides.keys():
+            atomDict = cls.calculate_atoms_from_oxide(key)
             dict = {}
-            for keyAtomDict, valueAtomDict in atomDict:
-                dict.update({keyAtomDict: (valueAtomDict * value)})
+            for keyAtomDict in atomDict.keys():
+                dict.update({keyAtomDict: [atomDict[keyAtomDict][0] * proportionsOfOxides[key], *atomDict[keyAtomDict][1:]]})
             atomDict = dict.copy()
             del dict
-            proportionsOfAtoms.update(atomDict)
 
 
+            for key in atomDict.keys():
+                if key in proportionsOfAtoms.keys():
+                    if atomDict[key][1] == 'Anion':
+                        proportionsOfAtoms[key][0] = proportionsOfAtoms[key][0] + atomDict[key][0]
+                    else:
+                        raise Exception(f'Atom {key} in two different oxidation states')
+                else:
+                    proportionsOfAtoms[key] = atomDict[key]
             
+        
+        proportionsOfAtoms = cls.calculate_ratios(proportionsOfAtoms)
+        
+        return proportionsOfAtoms
 
 
+    def get_proportion_of_atoms(self) -> dict:
+        proportionsOfOxides = self.get_proportions_of_oxides()
+        proportionsOfAtoms = EquationOfMaterial.calculate_proportions_of_atoms(proportionsOfOxides)
+        return proportionsOfAtoms
+            
+class CompositionOfMaterials:
+    def __init__(self ):
+        pass
 
