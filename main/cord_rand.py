@@ -34,6 +34,7 @@ class Folder:
             path = os.path.join(self.path, self.name, fileName)
             os.mkdir(path)
 
+
 class File: 
     def __init__(self, path: str=''):
         pass
@@ -240,7 +241,7 @@ class EquationOfMaterial:
         proportionsOfAtoms = EquationOfMaterial.calculate_proportions_of_atoms(proportionsOfOxides)
         return proportionsOfAtoms
             
-class CompositionOfMaterials:
+class CompositionOfMaterial:
     def __init__(self ):
         pass
 

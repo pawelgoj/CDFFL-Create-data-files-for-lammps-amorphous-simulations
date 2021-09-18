@@ -1,6 +1,6 @@
 import allure
 import pytest
-import cord_rand
+from main import cord_rand
 import os.path
 import shutil
 import os
@@ -9,7 +9,6 @@ from fractions import Fraction
 
 #Given
 #prepare test enviroment
-# 
 
 class BaseTest:
     @pytest.fixture()
@@ -149,10 +148,10 @@ class Testcord_rand(BaseTest):
         ]
     )
     def test_calculate_proportions_of_atoms(self, data, result):
-        assert cord_rand.EquationOfMaterial.calculate_proportions_of_atoms(data) == result    @allure.title("Get proportions of atoms")    
-
-
-    
+        assert cord_rand.EquationOfMaterial.calculate_proportions_of_atoms(data) == result    
+        
+        
+    @allure.title("Get proportions of atoms")    
     @allure.description_html("""
     <p>Get proportions of atoms</p>
     """)
@@ -160,9 +159,18 @@ class Testcord_rand(BaseTest):
     @pytest.mark.parametrize(
     'data,manyGlasses,xValue,respose', 
     [
-        ('x Na2O ( 1 - x ) ( 0.7 P2O5 0.3 Fe2O3 )', True, 0.5, {'Na2O': 0.5, 'P2O5': 0.35, 'Fe2O3': 0.15}),
-        ('0.7 P2O5 0.3 Fe2O3 0.2 Na2O', False, 0.5, {'P2O5': 0.7, 'Fe2O3': 0.3, 'Na2O': 0.2}),
-        ('x P2O5 ( 0.8 - x ) Fe2O3 0.2 Na2O', True, 0.5, {'P2O5': 0.5, 'Fe2O3': 0.3, 'Na2O': 0.2})
+        ('x Na2O ( 1 - x ) ( 0.7 P2O5 0.3 Fe2O3 )', True, 0.5, {'Na': [0.212766, 'Cation', 'O', Fraction(1, 2)],\
+            'P': [0.148936, 'Cation', 'O', Fraction(5, 2)],\
+            'Fe': [0.063830, 'Cation', 'O', Fraction(3, 2)],\
+            'O': [0.574468, 'Anion']}),
+        ('0.7 P2O5 0.3 Fe2O3 0.2 Na2O', False, 0.5, {'P': [0.200000, 'Cation', 'O', Fraction(5, 2)],\
+            'Fe': [0.085714, 'Cation', 'O', Fraction(3, 2)],\
+            'Na': [0.057143, 'Cation', 'O', Fraction(1, 2)],\
+            'O': [0.657143, 'Anion']}),
+        ('x P2O5 ( 0.8 - x ) Fe2O3 0.2 Na2O', True, 0.5, {'P': [0.178571, 'Cation', 'O', Fraction(5, 2)],\
+            'Fe': [0.107143, 'Cation', 'O', Fraction(3, 2)],\
+            'Na': [0.071429, 'Cation', 'O', Fraction(1, 2)],\
+            'O': [0.642857, 'Anion']})
     ]
     )
     def test_get_proportions_of_atoms(self, data, manyGlasses, xValue ,respose):
