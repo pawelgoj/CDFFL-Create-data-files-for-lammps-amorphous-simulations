@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 class Navigation:
     @staticmethod 
     def use_mouse_wheel(event):
-        mainCanvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        secondCanvas.yview_scroll(int(-1*(event.delta/120)), "units")
 
 class WidgetInApp(ABC, BaseWidget):
     def add_mouse_wheel_interaction(self):
@@ -70,12 +70,18 @@ class MessageInApp(tk.Message, WidgetInApp):
         super().__init__(root, *args, **kwargs)
         self.add_mouse_wheel_interaction()
 
+class CanvaInApp(tk.Canvas, WidgetInApp):
+    def __init__(self, root: Misc, *args, **kwargs):
+        super().__init__(root, *args, **kwargs)
+        self.add_mouse_wheel_interaction()
+
 class AppliactionCFWDFL(tk.Tk):
     """Object is a aplication window
     """
 
     def __init__(self, backgroundColor: str = '#1E1E1E', regularFontSize: int = 12, headingFontSize: int = 14, \
         messageBoxFontSize: int = 12, paddings: dict = {'padx': 8, 'pady': 8}):
+        self.backgroundColorValue = backgroundColor
         self.backgroundColor = {'bg': backgroundColor}
         super().__init__()
         #Title of application
@@ -86,7 +92,7 @@ class AppliactionCFWDFL(tk.Tk):
         self.resizable(width=True, height=True)
         self.windowingsystem = 'win32'
         self.config(self.backgroundColor)
-        self.geometry("1100x600")
+        self.geometry("600x600")
         #fonts 
         self.regularFontSize = font.Font(size = regularFontSize)
         self.headingFontSize = font.Font(size = headingFontSize)
@@ -100,9 +106,9 @@ class AppliactionCFWDFL(tk.Tk):
         font1 = self.headingFontSize 
         font2 = self.regularFontSize
         fontmessageBox = self.messageBoxFontSize
+
         paddings = self.paddings 
 
-        #kolor tła alikacji
         backgroundColor = self.backgroundColor
 
 
@@ -117,35 +123,56 @@ class AppliactionCFWDFL(tk.Tk):
             print(folder_selected)
         """******************************"""
 
-        #Ramak w oknie aplikacji/pasek przewijania 
+        self.styleOfBackground = ttk.Style(self)
+        self.styleOfBackground.configure('TSeparator', background=self.backgroundColorValue)
+
+        #Main farame in GUI fills the application window completely
         self.mainFrame = tk.Frame(self)
-
         mainFrame = self.mainFrame
-        mainFrame.pack(side='left', fill='both', expand=1)
+        mainFrame.pack(side='left',anchor='nw', fill='both', expand=1)
 
-        self.mainCanvas = tk.Canvas(mainFrame, backgroundColor , highlightthickness=0) #backgroundColor
-        global mainCanvas
+        self.mainCanvas = CanvaInApp(mainFrame, backgroundColor , highlightthickness=0) 
+        
+        # secondCanvas is global variable used in callback function: Navigation.use_mouse_wheel - which 
+        # changed position of this canvas
+        global secondCanvas
         mainCanvas = self.mainCanvas
-        mainCanvas.pack(side='left', fill='both', expand=1)
         
-        self.scrollBar = ttk.Scrollbar(mainFrame, orient='vertical', command=mainCanvas.yview)
+        
+        #This canvas have dimension equal to content in it and don't fills main canvas
+        self.secondCanvas = CanvaInApp(mainCanvas, bg='red', highlightthickness=0, width=763, height=672)
+        secondCanvas = self.secondCanvas
+        
+
+        #command scroll secondCanvas view in y direction
+        self.scrollBar = tk.Scrollbar(mainFrame, orient='vertical', command=secondCanvas.yview)
+        #command scroll secondCanvas view in x direction
+        self.scrollBarX = tk.Scrollbar(mainFrame, orient='horizontal', command=secondCanvas.xview)
         scrollBar = self.scrollBar
-        scrollBar.pack(side='right', fill='y')
 
-        mainCanvas.config(yscrollcommand=scrollBar.set)
-        mainCanvas.bind('<Configure>', lambda e: mainCanvas.config(scrollregion = mainCanvas.bbox("all")))
-        
-        
-        self.secondFrame = FrameInApp(mainCanvas, backgroundColor)
-        secondFrame = self.secondFrame
-        mainCanvas.create_window((0,0), window=secondFrame, anchor="nw")
+        #pack elements in main frame
+        #In GUI in main frame are in left canvas shows GUI content and on the right scrollbar 
+        scrollBar.pack(side='right', fill='y', anchor='ne')
+        self.scrollBarX.pack(side='bottom', anchor='w', fill='x', after=scrollBar)
+        mainCanvas.pack(side='left', anchor='nw', fill='both', expand=1, after=self.scrollBarX)
+        secondCanvas.pack(side='top', anchor='nw', fill='none', expand=0)
+
+        #function determines size and position of scroll bar elevator
+        secondCanvas.config(yscrollcommand=scrollBar.set, xscrollcommand=self.scrollBarX.set)
 
 
+        #event is event get size and position of canvas, scroll region, bbox is list of xmin, xmax, ymin, ymax
+        #of canvas 
+        secondCanvas.bind('<Configure>', lambda e: secondCanvas.config(scrollregion = secondCanvas.bbox("all")))
 
-        self.frame = FrameInApp(secondFrame, backgroundColor, width=600, height=300)
-        self.frame.grid(column=0, row=0, columnspan=6, rowspan=11, sticky = 'NW')
+        self.frame = FrameInApp(secondCanvas, backgroundColor)
+        self.frame.grid(columnspan=6, rowspan=11, sticky = 'nw')
+
+        #create window to display frame grid
+        secondCanvas.create_window((0,0), window=self.frame, anchor="nw")
+
         frame = self.frame
-        #instrukcje
+
         self.instructions = LabelInApp(frame, 0, 0, 6,\
             txt="""The program creates folders with input to lammps, based on the glass oxide formula. 
             """)
@@ -166,9 +193,11 @@ class AppliactionCFWDFL(tk.Tk):
         oneGlass = tk.BooleanVar()
         self.checkIfOneGlass = CheckbuttonInApp(frame, text='Only one glass', variable = oneGlass, onvalue=True, offvalue=False)
         self.checkIfOneGlass.grid(paddings, row = 5, column = 0, sticky = 'w', columnspan=3)
+        self.separator = ttk.Separator(frame, style='TSeparator', orient='horizontal')
 
+        self.separator.grid(row = 4, column = 0, columnspan=6)
         #instrukcja dla wzoru szkła
-        self.instructions2 = MessageInApp(frame, width=800, font=fontmessageBox,
+        self.instructions2 = MessageInApp(frame, width=800,  font=fontmessageBox,
             text="Wprowadzony wzór szkła powinien być w postaci: \n" \
             "\n x Na2O ( 1 - x ) * ( 0.3 Fe2O3 0.7 P2O5 ) \n" \
             "\nPamiętaj o spacjach!\nDozwolone symbole matematyczne: +, -, *. \n" \
@@ -177,9 +206,9 @@ class AppliactionCFWDFL(tk.Tk):
         self.instructions2.grid(paddings, row = 5, column = 3, sticky = 'w', columnspan=3)
 
         #czwarty rząd przycisków
-        self.label4 = LabelInApp(frame, 4, 0, 3, txt = "Enter the glass equation:")
-        self.inputGlassFormula =  EntryInApp(frame, width=50, font = font1)
-        self.inputGlassFormula.grid(paddings, sticky = 'w', row = 4, column = 3, columnspan=3)
+        self.label4 = LabelInApp(self.separator, 0, 0, 3, txt = "Enter the glass equation:")
+        self.inputGlassFormula =  EntryInApp(self.separator, width=50, font = font1)
+        self.inputGlassFormula.grid(paddings, sticky = 'w', row = 0, column = 3, columnspan=3)
 
         #Piąty rząd przycisków
         self.labelFrame = LabelFrameInApp(frame, backgroundColor, width=600, height=25, text='If many glasses', font=font2, fg='white')
@@ -207,7 +236,11 @@ class AppliactionCFWDFL(tk.Tk):
 
         self.frame4 = FrameInApp(frame, backgroundColor,  width=600, height=25)
         self.frame4.grid(row=8, column=0, columnspan=6, rowspan=1, sticky = 'w')
-        self.labelDensityOfGlass = LabelInApp(self.frame4, 0, 0, txt = "list of density of glasses:")
+
+        toTheCube = b'\xC2\xB3'
+        toTheCube = toTheCube.decode()
+        self.labelDensityOfGlass = LabelInApp(self.frame4, 0, 0, txt = f'list of density of glasses [g/cm{toTheCube}]:')
+
         self.inputDensityOfGlass =  EntryInApp(self.frame4, width=50, font = font2)
         self.inputDensityOfGlass.grid(paddings, row = 0, column = 2, sticky = 'w')
         self.inputDensityOfGlass.insert(0, "eg. 3.14, 3.15")
