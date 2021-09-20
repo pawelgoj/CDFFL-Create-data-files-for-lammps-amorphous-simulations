@@ -4,6 +4,8 @@ from tkinter import BaseWidget, Misc, ttk
 from tkinter import filedialog 
 from abc import ABC, abstractmethod
 
+from menu_functions import MenuFunctions
+
 
 class Navigation:
     @staticmethod 
@@ -66,8 +68,8 @@ class CheckbuttonInApp(tk.Checkbutton, WidgetInApp):
         self.add_mouse_wheel_interaction()
 
 class MessageInApp(tk.Message, WidgetInApp):
-    def __init__(self, root: Misc, *args, **kwargs):
-        super().__init__(root, *args, **kwargs)
+    def __init__(self, root: Misc, *args, fg: str='white', **kwargs):
+        super().__init__(root, *args, fg=fg, **kwargs)
         self.add_mouse_wheel_interaction()
 
 class CanvaInApp(tk.Canvas, WidgetInApp):
@@ -78,6 +80,7 @@ class CanvaInApp(tk.Canvas, WidgetInApp):
 class AppliactionCFWDFL(tk.Tk):
     """Object is a aplication window
     """
+
 
     def __init__(self, backgroundColor: str = '#1E1E1E', regularFontSize: int = 12, headingFontSize: int = 14, \
         messageBoxFontSize: int = 12, paddings: dict = {'padx': 8, 'pady': 8}):
@@ -91,7 +94,6 @@ class AppliactionCFWDFL(tk.Tk):
         self.iconbitmap("icon.ico")
         self.resizable(width=True, height=True)
         self.windowingsystem = 'win32'
-        self.config(self.backgroundColor)
         self.geometry("600x600")
         #fonts 
         self.regularFontSize = font.Font(size = regularFontSize)
@@ -122,14 +124,24 @@ class AppliactionCFWDFL(tk.Tk):
         def make_folders():
             print(folder_selected)
         """******************************"""
-
-        self.styleOfBackground = ttk.Style(self)
-        self.styleOfBackground.configure('TSeparator', background=self.backgroundColorValue)
+        self.style = ttk.Style()
+        self.style.configure('TSeparator', background=self.backgroundColorValue)
+        self.style.configure('TPanewindow', background=self.backgroundColorValue)
+        #menu bar 
+        menubar = tk.Menu(self)
+        self['menu'] = menubar
+        menuHelp = tk.Menu(self)
+        menuOtherProjects = tk.Menu(self)
+        menubar.add_cascade(menu=menuOtherProjects, label='Other projects')
+        menubar.add_cascade(menu=menuHelp, label='Help')
+        menuOtherProjects.add_command(label='1')
+        menuOtherProjects.add_command(label='2')
+        menuHelp.add_command(label='Documentation', command=MenuFunctions.show_documentation)
 
         #Main farame in GUI fills the application window completely
         self.mainFrame = tk.Frame(self)
         mainFrame = self.mainFrame
-        mainFrame.pack(side='left',anchor='nw', fill='both', expand=1)
+        mainFrame.pack(side='left', anchor='nw', fill='both', expand=1)
 
         self.mainCanvas = CanvaInApp(mainFrame, backgroundColor , highlightthickness=0) 
         
@@ -140,7 +152,7 @@ class AppliactionCFWDFL(tk.Tk):
         
         
         #This canvas have dimension equal to content in it and don't fills main canvas
-        self.secondCanvas = CanvaInApp(mainCanvas, bg='red', highlightthickness=0, width=763, height=672)
+        self.secondCanvas = CanvaInApp(mainCanvas, bg='red', highlightthickness=0, width=763, height=675)
         secondCanvas = self.secondCanvas
         
 
@@ -169,7 +181,7 @@ class AppliactionCFWDFL(tk.Tk):
         self.frame.grid(columnspan=6, rowspan=11, sticky = 'nw')
 
         #create window to display frame grid
-        secondCanvas.create_window((0,0), window=self.frame, anchor="nw")
+        secondCanvas.create_window((0,0), window=self.frame, anchor="nw", height=675)
 
         frame = self.frame
 
@@ -178,9 +190,11 @@ class AppliactionCFWDFL(tk.Tk):
             """)
 
         #pierwszy rząd przycisków 
-        self.label1 = LabelInApp(frame, 1, 0, 3, txt = "Choose the directory "\
+        self.separator1 = ttk.Separator(frame, style='TSeparator', orient='horizontal')
+        self.separator1.grid(row = 1, column = 0, columnspan=6, sticky='w')
+        self.label1 = LabelInApp(self.separator1, 1, 0, 3, txt = "Choose the directory "\
              "where files will they be created:")
-        self.button1 = ButtonInApp(frame, 1, 3, 3, txt = "Directory", functionApp =get_folder_path)
+        self.button1 = ButtonInApp(self.separator1, 1, 3, 3, txt = "Directory", functionApp =get_folder_path)
 
         #drugi rząd przycisków
         self.label2 = LabelInApp(frame, 2, 0, 3, txt = "Name of folder:")
@@ -193,11 +207,11 @@ class AppliactionCFWDFL(tk.Tk):
         oneGlass = tk.BooleanVar()
         self.checkIfOneGlass = CheckbuttonInApp(frame, text='Only one glass', variable = oneGlass, onvalue=True, offvalue=False)
         self.checkIfOneGlass.grid(paddings, row = 5, column = 0, sticky = 'w', columnspan=3)
-        self.separator = ttk.Separator(frame, style='TSeparator', orient='horizontal')
+        self.separator2 = ttk.Separator(frame, style='TSeparator', orient='horizontal')
 
-        self.separator.grid(row = 4, column = 0, columnspan=6)
+        self.separator2.grid(row = 4, column = 0, columnspan=6)
         #instrukcja dla wzoru szkła
-        self.instructions2 = MessageInApp(frame, width=800,  font=fontmessageBox,
+        self.instructions2 = MessageInApp(frame, width=800, fg='black',  font=fontmessageBox,
             text="Wprowadzony wzór szkła powinien być w postaci: \n" \
             "\n x Na2O ( 1 - x ) * ( 0.3 Fe2O3 0.7 P2O5 ) \n" \
             "\nPamiętaj o spacjach!\nDozwolone symbole matematyczne: +, -, *. \n" \
@@ -206,8 +220,8 @@ class AppliactionCFWDFL(tk.Tk):
         self.instructions2.grid(paddings, row = 5, column = 3, sticky = 'w', columnspan=3)
 
         #czwarty rząd przycisków
-        self.label4 = LabelInApp(self.separator, 0, 0, 3, txt = "Enter the glass equation:")
-        self.inputGlassFormula =  EntryInApp(self.separator, width=50, font = font1)
+        self.label4 = LabelInApp(self.separator2, 0, 0, 3, txt = "Enter the glass equation:")
+        self.inputGlassFormula =  EntryInApp(self.separator2, width=50, font = font1)
         self.inputGlassFormula.grid(paddings, sticky = 'w', row = 0, column = 3, columnspan=3)
 
         #Piąty rząd przycisków
@@ -246,12 +260,13 @@ class AppliactionCFWDFL(tk.Tk):
         self.inputDensityOfGlass.insert(0, "eg. 3.14, 3.15")
 
         #Komunikaty:
-        self.frame5 = FrameInApp(frame, backgroundColor,  width=600, height=40)
-        self.frame5.grid(row=9, column=0, columnspan=6, rowspan=1)
-        self.instructions2 = MessageInApp(self.frame5, backgroundColor, width=800, font=font2,\
-            fg = 'white',\
-            text="testowy")
-        self.instructions2.grid(paddings, row = 9, column = 2, columnspan=2)
+        self.comunicatesToUserFrame = FrameInApp(frame, backgroundColor,  width=600)
+        self.comunicatesToUserFrame.grid(row=9, column=0, columnspan=6, rowspan=1)
+        self.instructions2 = MessageInApp(self.comunicatesToUserFrame, backgroundColor, width=800, font=font2, text="testowy")
+        self.instructions2.grid(paddings, row = 0, column = 0, columnspan=6, rowspan=1)
+        progresBar = ttk.Progressbar(self.comunicatesToUserFrame, orient='horizontal', length=200, mode='indeterminate')
+        progresBar.grid(paddings, row = 1, column = 0, columnspan=6, rowspan=1)
+        progresBar.start()
 
 
         #Last row of buttons 
@@ -259,6 +274,7 @@ class AppliactionCFWDFL(tk.Tk):
         self.quitButton = ButtonInApp(frame, 10, 3, 3, txt = "Exit", functionApp = self.quit)
         self.frame6 = FrameInApp(frame, backgroundColor,  width=600, height=40)
         self.frame6.grid(row=11, column=0, columnspan=6, rowspan=1)
+
 
 
 application = AppliactionCFWDFL()
