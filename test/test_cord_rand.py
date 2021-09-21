@@ -173,6 +173,7 @@ class Testcord_rand(BaseTest):
             'O': [0.642857, 'Anion']})
     ]
     )
+    
     def test_get_proportions_of_atoms(self, data, manyGlasses, xValue ,respose):
         #Given
         foo = cord_rand.EquationOfMaterial(data, manyGlasses, xValue)
@@ -181,6 +182,28 @@ class Testcord_rand(BaseTest):
 
         #Then
         assert respose == proportionsOfAtoms
+
+    @allure.title("Get atoms in system")    
+    @allure.description_html("""
+    <p>Get atoms in system</p>
+    """)
+    @pytest.mark.noautofixt
+    @pytest.mark.parametrize(
+    'proportionsOfAtoms,numberOfAtomsInSystem,response',
+    [
+        ({'Na': [0.212766, 'Cation', 'O', Fraction(1, 2)],\
+            'P': [0.148936, 'Cation', 'O', Fraction(5, 2)],\
+            'Fe': [0.063830, 'Cation', 'O', Fraction(3, 2)],\
+            'O': [0.574468, 'Anion']}, 1000, {'Na': 214, 'P': 150, 'Fe': 64, 'O': 578})
+    ]
+    )
+    def test_get_atoms_in_system(self, proportionsOfAtoms, numberOfAtomsInSystem, response):
+        #Given 
+        compositionOfMaterial = cord_rand.CompositionOfMaterial(proportionsOfAtoms, numberOfAtomsInSystem)
+        #When 
+        atomsInSystem = compositionOfMaterial.get_atoms_in_system()
+        #Then 
+        assert atomsInSystem == response
 
 
     @pytest.mark.skip(reason="No yet this funcionality")

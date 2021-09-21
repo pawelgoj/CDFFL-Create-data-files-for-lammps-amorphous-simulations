@@ -93,7 +93,7 @@ class AppliactionCFWDFL(tk.Tk):
         #ico
         self.iconbitmap("icon.ico")
         self.resizable(width=True, height=True)
-        self.windowingsystem = 'win32'
+        #self.windowingsystem = 'win32'
         self.geometry("600x600")
         #fonts 
         self.regularFontSize = font.Font(size = regularFontSize)

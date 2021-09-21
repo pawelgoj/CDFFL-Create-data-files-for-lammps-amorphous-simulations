@@ -242,6 +242,22 @@ class EquationOfMaterial:
         return proportionsOfAtoms
             
 class CompositionOfMaterial:
-    def __init__(self ):
-        pass
-
+    def __init__(self, proportionsOfAtoms: dict, numberOfAtomsInSystem: int):
+        self.proportionsOfAtoms= proportionsOfAtoms
+        self.numberOfAtomsInSystem = numberOfAtomsInSystem
+    def get_atoms_in_system(self) -> dict:
+        atomsInSystem = {}       
+        for key in self.proportionsOfAtoms.keys():
+            if self.proportionsOfAtoms[key][1] == 'Cation':
+                number = round(self.proportionsOfAtoms[key][0] * self.numberOfAtomsInSystem)
+                anion = self.proportionsOfAtoms[key][2]
+                ratio = self.proportionsOfAtoms[key][3]
+                while number % ratio.denominator != 0:
+                    number +=1
+                
+                atomsInSystem.update({key: number})
+                if (anion in atomsInSystem.keys()):
+                    atomsInSystem[anion] = int(ratio * number) + atomsInSystem[anion]
+                else:
+                    atomsInSystem[anion] = int(ratio * number)
+        return atomsInSystem
