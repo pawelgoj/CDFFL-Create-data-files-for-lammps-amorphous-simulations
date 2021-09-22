@@ -35,8 +35,8 @@ class ButtonInApp(tk.Button, WidgetInApp):
         columspan: int = 1, sticky='w', txt: str = "text on button",\
         functionApp = None):
 
-        font1 = font.Font(size = 14)
-        paddings = {'padx': 8, 'pady': 8}
+        font1 = font.Font(size = 12)
+        paddings = {'padx': 5, 'pady': 5}
         backgroundColorAndBorder = {'bg': '#403332', 'bd': 4}
 
         super().__init__(root, backgroundColorAndBorder, text = txt,\
@@ -62,7 +62,7 @@ class LabelFrameInApp(tk.LabelFrame, WidgetInApp):
 class CheckbuttonInApp(tk.Checkbutton, WidgetInApp):
     def __init__(self, root: Misc, *args, **kwargs):
         font1 = font.Font(size = 14)
-        attributes = {'padx': 8, 'pady': 8, 'bg': '#1E1E1E', 'selectcolor': '#1E1E1E',\
+        attributes = {'padx': 6, 'pady': 6, 'bg': '#1E1E1E', 'selectcolor': '#1E1E1E',\
             'activebackground': '#1E1E1E', 'fg': 'white'}
         super().__init__(root, attributes, font = font1,  *args, **kwargs)
         self.add_mouse_wheel_interaction()
@@ -83,7 +83,7 @@ class AppliactionCFWDFL(tk.Tk):
 
 
     def __init__(self, backgroundColor: str = '#1E1E1E', regularFontSize: int = 12, headingFontSize: int = 14, \
-        messageBoxFontSize: int = 12, paddings: dict = {'padx': 8, 'pady': 8}):
+        messageBoxFontSize: int = 12, paddings: dict = {'padx': 6, 'pady': 6}):
         self.backgroundColorValue = backgroundColor
         self.backgroundColor = {'bg': backgroundColor}
         super().__init__()
@@ -93,7 +93,7 @@ class AppliactionCFWDFL(tk.Tk):
         #ico
         self.iconbitmap("icon.ico")
         self.resizable(width=True, height=True)
-        #self.windowingsystem = 'win32'
+        self.windowingsystem = 'win32'
         self.geometry("600x600")
         #fonts 
         self.regularFontSize = font.Font(size = regularFontSize)
@@ -152,7 +152,7 @@ class AppliactionCFWDFL(tk.Tk):
         
         
         #This canvas have dimension equal to content in it and don't fills main canvas
-        self.secondCanvas = CanvaInApp(mainCanvas, bg='red', highlightthickness=0, width=763, height=675)
+        self.secondCanvas = CanvaInApp(mainCanvas, backgroundColor, highlightthickness=0, width=763, height=705)
         secondCanvas = self.secondCanvas
         
 
@@ -181,12 +181,12 @@ class AppliactionCFWDFL(tk.Tk):
         self.frame.grid(columnspan=6, rowspan=11, sticky = 'nw')
 
         #create window to display frame grid
-        secondCanvas.create_window((0,0), window=self.frame, anchor="nw", height=675)
+        secondCanvas.create_window((0,0), window=self.frame, anchor="nw", height=705)
 
         frame = self.frame
 
         self.instructions = LabelInApp(frame, 0, 0, 6,\
-            txt="""The program creates folders with input to lammps, based on the glass oxide formula. 
+            txt="""The program creates folders with input data for lammps, based on the glass oxide formula. 
             """)
 
         #pierwszy rząd przycisków 
@@ -258,6 +258,12 @@ class AppliactionCFWDFL(tk.Tk):
         self.inputDensityOfGlass =  EntryInApp(self.frame4, width=50, font = font2)
         self.inputDensityOfGlass.grid(paddings, row = 0, column = 2, sticky = 'w')
         self.inputDensityOfGlass.insert(0, "eg. 3.14, 3.15")
+
+        self.labelChargeOfAtoms = LabelInApp(self.frame4, 1, 0, txt = f'charges of atoms for simulations:')
+        self.inputChargeOfatoms =  EntryInApp(self.frame4, width=50, font = font2)
+        self.inputChargeOfatoms.grid(paddings, row= 1, column=2, sticky='w')
+        self.inputChargeOfatoms.insert(0, "eg. Fe: 3, P: 5")
+
 
         #Komunikaty:
         self.comunicatesToUserFrame = FrameInApp(frame, backgroundColor,  width=600)
