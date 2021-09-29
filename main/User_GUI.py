@@ -2,7 +2,8 @@ import tkinter as tk
 import tkinter.font as font
 from tkinter import BaseWidget, Misc, ttk
 from tkinter import filedialog 
-from abc import ABC, abstractmethod
+from abc import ABC
+from cord_rand import *
 
 from menu_functions import MenuFunctions
 
@@ -11,6 +12,28 @@ class Navigation:
     @staticmethod 
     def use_mouse_wheel(event):
         secondCanvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+class CallBacks: 
+    @staticmethod
+    #funkcja pobierając ścieżkę do folderu
+    def get_folder_path():
+        app.get_directory(filedialog.askdirectory())
+
+    @staticmethod
+    #Funkcja wykonuje program
+    def make_folders():
+        nameOfFolder = applicationGUI.input1.get()
+        prefixSubFolders = applicationGUI.input2.get()
+        GlassFormula = applicationGUI.inputGlassFormula.get()
+        manyGlasses = not applicationGUI.checkIfOneGlass
+        startX = float(applicationGUI.inputStartX.get())
+        stepX = float(applicationGUI.inputStepX.get())
+        numberOfStep =  int(applicationGUI.inputNumberOfSteps.get())
+        numberOfAtoms = int(applicationGUI.inputNumberOfAtoms.get())
+        densityOfGlass = applicationGUI.inputDensityOfGlass.get()
+        chargeOfatoms = applicationGUI.inputChargeOfatoms.get()
+        app.make_folders_with_data_for_lammps(nameOfFolder, prefixSubFolders, GlassFormula,
+            manyGlasses, startX, stepX, numberOfStep, numberOfAtoms, densityOfGlass, chargeOfatoms)
 
 class WidgetInApp(ABC, BaseWidget):
     def add_mouse_wheel_interaction(self):
@@ -113,17 +136,6 @@ class AppliactionCFWDFL(tk.Tk):
 
         backgroundColor = self.backgroundColor
 
-
-        '''Te funkcje trzeba jakoś wyodrębnić '''
-        #funkcja pobierając ścieżkę do folderu
-        def get_folder_path():
-            global folder_selected
-            folder_selected = filedialog.askdirectory()
-
-        #Funkcja wykonuje program
-        def make_folders():
-            print(folder_selected)
-        """******************************"""
         self.style = ttk.Style()
         self.style.configure('TSeparator', background=self.backgroundColorValue)
         self.style.configure('TPanewindow', background=self.backgroundColorValue)
@@ -194,16 +206,16 @@ class AppliactionCFWDFL(tk.Tk):
         self.separator1.grid(row = 1, column = 0, columnspan=6, sticky='w')
         self.label1 = LabelInApp(self.separator1, 1, 0, 3, txt = "Choose the directory "\
              "where files will they be created:")
-        self.button1 = ButtonInApp(self.separator1, 1, 3, 3, txt = "Directory", functionApp =get_folder_path)
+        self.button1 = ButtonInApp(self.separator1, 1, 3, 3, txt = "Directory", functionApp =CallBacks.get_folder_path)
 
         #drugi rząd przycisków
         self.label2 = LabelInApp(frame, 2, 0, 3, txt = "Name of folder:")
-        self.input1 = EntryInApp(frame, width=20, font = font2).grid(paddings, sticky = 'w', row = 2, column = 3, columnspan=3)
-
+        self.input1 = EntryInApp(frame, width=20, font = font2)
+        self.input1.grid(paddings, sticky = 'w', row = 2, column = 3, columnspan=3)
         #trzeci rząd przycisków
         self.label3 = LabelInApp(frame, 3, 0, 3, txt = "Enter the prefix for subfolders:")
-        self.input2 =  EntryInApp(frame, width=20, font = font2).grid(paddings, sticky = 'w', row = 3, column = 3, columnspan=3)
-
+        self.input2 =  EntryInApp(frame, width=20, font = font2)
+        self.input2.grid(paddings, sticky = 'w', row = 3, column = 3, columnspan=3)
         oneGlass = tk.BooleanVar()
         self.checkIfOneGlass = CheckbuttonInApp(frame, text='Only one glass', variable = oneGlass, onvalue=True, offvalue=False)
         self.checkIfOneGlass.grid(paddings, row = 5, column = 0, sticky = 'w', columnspan=3)
@@ -276,18 +288,14 @@ class AppliactionCFWDFL(tk.Tk):
 
 
         #Last row of buttons 
-        self.StartButton = ButtonInApp(frame, 10, 0, 3, 'E', txt = "Start", functionApp = make_folders)
+        self.StartButton = ButtonInApp(frame, 10, 0, 3, 'E', txt = "Start", functionApp = CallBacks.make_folders)
         self.quitButton = ButtonInApp(frame, 10, 3, 3, txt = "Exit", functionApp = self.quit)
         self.frame6 = FrameInApp(frame, backgroundColor,  width=600, height=40)
         self.frame6.grid(row=11, column=0, columnspan=6, rowspan=1)
 
+app = App()
+applicationGUI = AppliactionCFWDFL()
 
-
-application = AppliactionCFWDFL()
-global folder_selected
-folder_selected = ''
-print(folder_selected)
-
-application.mainloop()
+applicationGUI.mainloop()
 
 
