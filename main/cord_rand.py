@@ -9,29 +9,54 @@ class App:
     def __init__(self):
         self.directory = ''
 
-    def get_directory(self, directory):
+
+    def set_directory(self, directory):
         self.directory = directory
 
+
     def make_folders_with_data_for_lammps(self, nameOfFolder: str, prefixSubFolder: str, equation: str, manyGlasses: bool,
-        initX: float, stepX: float, quantityOfMaterials: int, atomsInSingleMaterial: int,
-        strDensityList: str, strCharges: str):
-        '''
-        folder = Folder()
+        initX: float, stepX: float, atomsInSingleMaterial: int, strDensityList: str, strCharges: str, quantityOfMaterials: int = 1):
+
+        nrOfFolders = quantityOfMaterials
+    
+        folder = Folder(self.directory, nameOfFolder, prefixSubFolder, nrOfFolders)
         folder.create_folders()
         subfoldersPaths = folder.create_sub_folders()
-        FilesForLammps(subfoldersPaths)
-        '''
-        print(self.directory)
 
-#TODO implement this class
+        materialsList = MaterialsList(EquationOfMaterial, CompositionOfMaterial,
+        manyGlasses, equation, initX, stepX, quantityOfMaterials, atomsInSingleMaterial,
+        strDensityList, strCharges, file = 'AtomMass.json')
+
+        charges = materialsList.get_charges()
+        materialsList, atomsMasses = materialsList.get_materials_list_and_atom_masses_dict()
+
+        filesForLammps = FilesForLammps(FileForLammps, subfoldersPaths, prefixSubFolder , materialsList, atomsMasses, charges)
+        filesForLammps.make_files()
+
+
+
 class FilesForLammps:
-    def __init__(self, subfoldersPaths):
+    def __init__(self, FileForLammps: type, subfoldersPaths: list, prefixSubFolder: str, materialsList: list, atomsMasses: dict, charges: dict):
+        
+        self.FileForLammps = FileForLammps
+        self.prefixSubFolder = prefixSubFolder
         self.subfoldersPaths = subfoldersPaths
-    def make_files(self, materialsList, atomsMasses, atomsCharges):
-        for subfolderpath in self.subfoldersPaths:
-            pass
+        self.materialsList = materialsList
+        self.charges = charges
+        self.atomsMasses = atomsMasses
+        self.FileForLammps = FileForLammps
 
-#TODO implement this class
+    def make_files(self):
+        i = 0
+        for subfolderPath in self.subfoldersPaths:
+            name = self.prefixSubFolder + f"{i+1}"
+            
+            material = self.materialsList[i]
+            file = self.FileForLammps(name, material, self.charges, self.atomsMasses, subfolderPath)
+            file.create_complete_file()
+            i+= 1
+
+
 class FileForLammps:
     def __init__(self, name: str, material: dict, charges: dict, atomMasses: dict, subfolderPath: str):
         self.path = f'{subfolderPath}\\{name}'
@@ -102,6 +127,15 @@ class FileForLammps:
 
                 number-=1
 
+    def create_complete_file(self):
+        self.crate_file_with_title()
+        self.write_quantity_of_atoms()
+        self.write_number_of_atom_types()
+        self.write_system_coordinates()
+        self.write_masses_of_atoms()
+        self.write_table_with_atoms_positions()
+
+
 class MaterialsList:
     """
         In this class objects input data are process to obtain materials list. 
@@ -156,6 +190,9 @@ class MaterialsList:
             i += 1
 
         return materialsList, atomsMasses
+    
+    def get_charges(self):
+        return self.chargesOfAtoms
 
     @staticmethod
     def convert_string_densities_to_list(GlassesDensities: str) -> list:
@@ -185,6 +222,7 @@ class MaterialsList:
             atomMassesDict.update({atom : jsonFileContent[atomInJson]})
         return atomMassesDict
 
+
 class Folder: 
     def __init__(self, path: str ='', name: str = '', prefix: str = '', nrOfFolders: int = 0):
         '''Folder class creates directory for input simulations files'''
@@ -208,6 +246,7 @@ class Folder:
             pathsList.append(path)
             os.mkdir(path)
         return pathsList
+
 
 class EquationOfMaterial: 
 
@@ -408,6 +447,7 @@ class EquationOfMaterial:
     def round_math_part(number) -> float:
         return round(float(number), 6)
 
+
 class CompositionOfMaterial:
     def __init__(self, proportionsOfAtoms: dict, numberOfAtomsInSystem: int):
         self.proportionsOfAtoms= proportionsOfAtoms
@@ -429,11 +469,14 @@ class CompositionOfMaterial:
                     atomsInSystem[anion] = int(ratio * number)
         return atomsInSystem
 
+
 class IncorectFilePath(Exception):
     pass
 
+
 class NumberOfItemsOnTheListOfOxidesAndCoefficientsIncorrect(Exception):
     pass
+
 
 class Constants: 
     AvogadroConstant =  6.02214076 * (10 ** 23)

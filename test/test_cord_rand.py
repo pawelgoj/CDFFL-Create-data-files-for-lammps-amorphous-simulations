@@ -1,22 +1,23 @@
 import allure
+
 import pytest
 from pytest_mock import mocker
+
 import pandas as pd 
 import numpy as np
 
+import os
 import os.path
 import shutil
-import os
+
 from fractions import Fraction
 
 from main import cord_rand
 from test.mocks import MockFactory
 
 
-#Given
-#prepare test enviroment
 
-class BaseTest:
+class Preconditions:
     @pytest.fixture()
     def setup(self):
         self.file_path = 'D:/Praca/Programowanie/Skrypty-py/AppliactionCFWDFL_tworz_foldery_z_danymi_do_Lammpsa'\
@@ -28,12 +29,13 @@ class BaseTest:
         path = os.path.join(self.file_path)
         os.mkdir(path)
         yield self.file_path
-        '''try:
+
+        try:
             shutil.rmtree(self.file_path)
         except:
-            pass'''
-            
+            pass
 
+            
 class TestsCompositionOfMaterial:
     @allure.title("Get atoms in system")    
     @allure.description_html("""
@@ -212,7 +214,7 @@ class TestsMaterialsList:
 
 
 @pytest.mark.usefixtures("setup")
-class TestCreateFoldersAndSubFolders(BaseTest):
+class TestCreateFoldersAndSubFolders(Preconditions):
 
     #Decorator for allure 
     @allure.title("Create directory")
@@ -222,9 +224,13 @@ class TestCreateFoldersAndSubFolders(BaseTest):
     def test_create_correct_folder(self, setup):
         path = setup
         #when
-        folder = cord_rand.Folder(path, 'Dane', 'dane', 5)
+        folder = cord_rand.Folder(path, 'Dane', 'dane', 3)
+
+
         #then
+
         assert folder.path == path 
+
         return folder
 
 
@@ -246,8 +252,12 @@ class TestCreateFoldersAndSubFolders(BaseTest):
         #Given
         folder = TestCreateFoldersAndSubFolders.test_create_correct_folder(self, setup)
         path = setup
+
+
         #when
         folder.create_folders()
+
+
         #then
         assert os.path.isdir(path  + '/Dane')
 
@@ -262,17 +272,26 @@ class TestCreateFoldersAndSubFolders(BaseTest):
         folder = TestCreateFoldersAndSubFolders.test_create_correct_folder(self, setup)
         folder.create_folders()
         path = setup
+
+
         #when
-        folder.create_sub_folders()
-        numberOfSubFolders = 5
+        subFoldersList = folder.create_sub_folders()
+        numberOfSubFolders = 3
+
+
         #then
         for i in range(1,numberOfSubFolders + 1):
             file = 'dane' + str(i)
-            assert os.path.isdir(path +'/Dane/' + file)
+            print(subFoldersList)
+            assert os.path.isdir(path +'/Dane/' + file) and subFoldersList
 
 
 @pytest.mark.usefixtures("setup")
-class TestsCreateFile(BaseTest):
+class TestsCreateFile(Preconditions):
+
+    data_for_tests = ('Test', {'composition': {'FeIII': 26, 'O': 139, 'P': 40}, 'quantityOfAtoms': 205, 'volume': 3022.6969},
+        {'FeIII': 3, 'P': 5, 'O': -2}, {'FeIII': 55.845, 'P': 30.9738, 'O': 15.9994})
+
     @allure.title("Crate file with title")
     @allure.description_html("""
     <p>Crate file with title</p>
@@ -280,19 +299,24 @@ class TestsCreateFile(BaseTest):
     @pytest.mark.parametrize(
     'name, material, charges, atomMasses',
     [
-        ('Test', {'composition': {'FeIII': 26, 'O': 139, 'P': 40}, 'quantityOfAtoms': 205, 'volume': 3022.6969},
-        {'FeIII': 3, 'P': 5, 'O': -2}, {'FeIII': 55.845, 'P': 30.9738, 'O': 15.9994})
+        data_for_tests
     ]
     )
     def test_crate_file_with_title(self, setup, name, material, charges, atomMasses):
         #Given 
         sub_folder_path = setup
         file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
+
+
         #When 
         file_for_lammps.crate_file_with_title()
+
+
         #Then
         path = sub_folder_path  + '/' + name + '.txt'
+
         assert os.path.isfile(path)
+
 
     @allure.title("Write quantity of atoms")
     @allure.description_html("""
@@ -301,21 +325,26 @@ class TestsCreateFile(BaseTest):
     @pytest.mark.parametrize(
     'name, material, charges, atomMasses',
     [
-        ('Test', {'composition': {'FeIII': 26, 'O': 139, 'P': 40}, 'quantityOfAtoms': 205, 'volume': 3022.6969},
-        {'FeIII': 3, 'P': 5, 'O': -2}, {'FeIII': 55.845, 'P': 30.9738, 'O': 15.9994})
+        data_for_tests
     ]
     )
     def test_write_quantity_of_atoms(self, setup, name, material, charges, atomMasses):
+
         #Given 
         TestsCreateFile.test_crate_file_with_title(self, setup, name, material, charges, atomMasses)
         sub_folder_path = setup
         file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
+
+
         #When 
         file_for_lammps.write_quantity_of_atoms()
+
+
         #Then
         path = sub_folder_path  + '/' + name + '.txt'
         with open(path, 'r' ) as file:
             text_in_file = file.read()
+
             assert '205 atoms' in text_in_file
 
 
@@ -326,22 +355,27 @@ class TestsCreateFile(BaseTest):
     @pytest.mark.parametrize(
     'name, material, charges, atomMasses',
     [
-        ('Test', {'composition': {'FeIII': 26, 'O': 139, 'P': 40}, 'quantityOfAtoms': 205, 'volume': 3022.6969},
-        {'FeIII': 3, 'P': 5, 'O': -2}, {'FeIII': 55.845, 'P': 30.9738, 'O': 15.9994})
+        data_for_tests
     ]
     )
     def test_write_number_of_atom_types(self, setup, name, material, charges, atomMasses):
         #Given 
         TestsCreateFile.test_crate_file_with_title(self, setup, name, material, charges, atomMasses)
         sub_folder_path = setup
+
+
         file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
         #When 
         file_for_lammps.write_number_of_atom_types()
+
+
         #Then
         path = sub_folder_path  + '/' + name + '.txt'
         with open(path, 'r' ) as file:
             text_in_file = file.read()
+
             assert '3 atom types' in text_in_file
+
 
     @allure.title("Write system coordinates")
     @allure.description_html("""
@@ -350,8 +384,7 @@ class TestsCreateFile(BaseTest):
     @pytest.mark.parametrize(
     'name, material, charges, atomMasses',
     [
-        ('Test', {'composition': {'FeIII': 26, 'O': 139, 'P': 40}, 'quantityOfAtoms': 205, 'volume': 3022.6969},
-        {'FeIII': 3, 'P': 5, 'O': -2}, {'FeIII': 55.845, 'P': 30.9738, 'O': 15.9994})
+        data_for_tests
     ]
     )
     def test_write_system_coordinates(self, setup, name, material, charges, atomMasses):
@@ -359,13 +392,19 @@ class TestsCreateFile(BaseTest):
         TestsCreateFile.test_crate_file_with_title(self, setup, name, material, charges, atomMasses)
         sub_folder_path = setup
         file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
+
+
         #When 
         file_for_lammps.write_system_coordinates()
+
+
         #Then
         path = sub_folder_path  + '/' + name + '.txt'
         with open(path, 'r' ) as file:
             text_in_file = file.read()
+
             assert '0 14.458776 xlo xhi\n0 14.458776 ylo yhi\n0 14.458776 zlo zhi' in text_in_file
+
 
     @allure.title("Write masses of atoms")
     @allure.description_html("""
@@ -374,21 +413,26 @@ class TestsCreateFile(BaseTest):
     @pytest.mark.parametrize(
     'name, material, charges, atomMasses',
     [
-        ('Test', {'composition': {'FeIII': 26, 'O': 139, 'P': 40}, 'quantityOfAtoms': 205, 'volume': 3022.6969},
-        {'FeIII': 3, 'P': 5, 'O': -2}, {'FeIII': 55.845, 'P': 30.9738, 'O': 15.9994})
+        data_for_tests
     ]
     )
     def test_write_masses_of_atoms(self, setup, name, material, charges, atomMasses):
+
         #Given 
         TestsCreateFile.test_crate_file_with_title(self, setup, name, material, charges, atomMasses)
         sub_folder_path = setup
         file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
+
+
         #When 
         file_for_lammps.write_masses_of_atoms()
+
+
         #Then
         path = sub_folder_path  + '/' + name + '.txt'
         with open(path, 'r' ) as file:
             text_in_file = file.read()
+
             assert '1 55.845\n2 30.9738\n3 15.9994' in text_in_file
 
 
@@ -399,44 +443,123 @@ class TestsCreateFile(BaseTest):
     @pytest.mark.parametrize(
     'name, material, charges, atomMasses',
     [
-        ('Test', {'composition': {'FeIII': 26, 'O': 139, 'P': 40}, 'quantityOfAtoms': 205, 'volume': 3022.6969},
-        {'FeIII': 3, 'P': 5, 'O': -2}, {'FeIII': 55.845, 'P': 30.9738, 'O': 15.9994})
+        data_for_tests
     ]
     )
     def test_write_table_with_atoms_positions(self, setup, name, material, charges, atomMasses):
-        #Given  
+
+        #Given 
         TestsCreateFile.test_crate_file_with_title(self, setup, name, material, charges, atomMasses)
         sub_folder_path = setup
         file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
+
+        def get_correct_number_of_atom_types(charges, material):
+            correct_values = []
+            for key in charges.keys():               
+                correct_values.append(material['composition'][key])
+
+            return correct_values 
+
+
         #When 
         file_for_lammps.write_table_with_atoms_positions()
+
+
         #Then
+        def cunt_atom_types_in_file(sub_folder_path, name):
+            path = sub_folder_path  + '/' + name + '.txt'
+            with open(path, 'r' ) as file:
+                text_in_file = file.read()
+
+            splitted = text_in_file.split('\n')
+            splitted = splitted[4:-1]
+
+            for item in splitted:
+                item = item.split()
+                try: 
+                    top = np.array(item)
+                    bottom = np.vstack((bottom, top))
+                except:
+
+                    bottom = np.array(item)
+
+            df = pd.DataFrame(data=bottom)
+
+            cunt = df.groupby([2]).count()
+            cunt_in_file = []
+            for key, value in charges.items():
+                cunt_in_file.append(cunt.loc[str(value), 1])
+
+            return cunt_in_file
+
+        assert get_correct_number_of_atom_types(charges, material) == cunt_atom_types_in_file(sub_folder_path, name)
+
+    @allure.title("Write table with atoms positions")
+
+    @allure.description_html("""
+    <p>Write table with atoms positions</p>
+    """)
+    @pytest.mark.parametrize(
+    'name, material, charges, atomMasses',
+    [
+        data_for_tests
+    ]
+    )
+    def test_create_file_with_all_necessary_data(self, setup, name, material, charges, atomMasses):
+        #Given 
+        sub_folder_path = setup
+        file = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
+
+        #When 
+        file.create_complete_file()
+
         path = sub_folder_path  + '/' + name + '.txt'
-        with open('Testy\Test.txt', 'r' ) as file:
+        with open(path, 'r' ) as file:
             text_in_file = file.read()
 
-        splitted = text_in_file.split('\n')
-        splitted = splitted[4:-1]
+        #Then 
+        assert '205 atoms' in text_in_file and '3 atom types' in text_in_file\
+            and '0 14.458776 xlo xhi\n0 14.458776 ylo yhi\n0 14.458776 zlo zhi' in text_in_file\
+            and '1 55.845\n2 30.9738\n3 15.9994' in text_in_file
 
-        for item in splitted:
-            item = item.split()
-            try: 
-                top = np.array(item)
-                bottom = np.vstack((bottom, top))
-            except:
 
-                bottom = np.array(item)
+@pytest.mark.usefixtures("setup")
+class TestsFilesForLammps(Preconditions):
 
-        df = pd.DataFrame(data=bottom)
+    @allure.title("Create files with data for Lammps simulations in subfolders")
+    @allure.description_html("""
+    <p>Create files with data for Lammps simulations in subfolders</p>
+    """)
+    #@pytest.mark.skip("Test not implement yet!!!")
+    @pytest.mark.parametrize(
+    "nameOfFolder,prefixOfSubFolder,nrOfSubFoldersFolders,materialsList, atomsMasses,charges",
+        [('Dane', 'dane', 3,
+        [ 
+            {'composition': {'FeIII': 12, 'O': 138, 'P': 48}, 'quantityOfAtoms': 198, 'volume': 2899.1681},
+            {'composition': {'FeIII': 20, 'O': 140, 'P': 44}, 'quantityOfAtoms': 204, 'volume': 3014.3020},
+            {'composition': {'FeIII': 26, 'O': 139, 'P': 40}, 'quantityOfAtoms': 205, 'volume': 3022.6969}
+        ], {'FeIII': 55.845, 'P': 30.9738, 'O': 15.9994}, {'FeIII': 3, 'P': 5, 'O': -2})
+        ]
 
-        cunt = df.groupby([2]).count()
-        correct_values = []
-        cunt_in_file = []
-        for key, value in charges.items():
-            correct_values.append(material['composition'][key])
-            cunt_in_file.append(cunt.loc[str(value), 1])
-        assert correct_values == cunt_in_file
+    )
+    
+    def test_make_files(self, setup, nameOfFolder, prefixOfSubFolder, nrOfSubFoldersFolders, materialsList, atomsMasses, charges):
+        
+        #Given
+        path = setup
+        folder = cord_rand.Folder(path, nameOfFolder, prefixOfSubFolder, nrOfSubFoldersFolders)
+        folder.create_folders()
+        subfoldersPaths = folder.create_sub_folders()
 
+        #When 
+        filesForLammps = cord_rand.FilesForLammps(cord_rand.FileForLammps, subfoldersPaths, prefixOfSubFolder, materialsList, atomsMasses, charges)
+        filesForLammps.make_files()
+
+        #Then
+        for i in range(1,nrOfSubFoldersFolders + 1):
+            subFolder = 'dane' + str(i)
+            file = 'dane' + str(i)
+            assert os.path.exists(path +'/Dane/' + subFolder + '/' + file + '.txt') 
 
 
 #integration tests of App logic 

@@ -17,7 +17,7 @@ class CallBacks:
     @staticmethod
     #funkcja pobierając ścieżkę do folderu
     def get_folder_path():
-        app.get_directory(filedialog.askdirectory())
+        app.set_directory(filedialog.askdirectory())
 
     @staticmethod
     #Funkcja wykonuje program
@@ -33,7 +33,7 @@ class CallBacks:
         densityOfGlass = applicationGUI.inputDensityOfGlass.get()
         chargeOfatoms = applicationGUI.inputChargeOfatoms.get()
         app.make_folders_with_data_for_lammps(nameOfFolder, prefixSubFolders, GlassFormula,
-            manyGlasses, startX, stepX, numberOfStep, numberOfAtoms, densityOfGlass, chargeOfatoms)
+            manyGlasses, startX, stepX, numberOfAtoms, densityOfGlass, chargeOfatoms, numberOfStep)
 
 class WidgetInApp(ABC, BaseWidget):
     def add_mouse_wheel_interaction(self):
@@ -127,7 +127,7 @@ class AppliactionCFWDFL(tk.Tk):
 
 
     def createWidgets(self) -> None:
-        #czcionki w  widżetach (to można dać gdzie indizej)
+        #Fonts in widgets 
         font1 = self.headingFontSize 
         font2 = self.regularFontSize
         fontmessageBox = self.messageBoxFontSize
@@ -201,18 +201,19 @@ class AppliactionCFWDFL(tk.Tk):
             txt="""The program creates folders with input data for lammps, based on the glass oxide formula. 
             """)
 
-        #pierwszy rząd przycisków 
+        #First row of buttons 
         self.separator1 = ttk.Separator(frame, style='TSeparator', orient='horizontal')
         self.separator1.grid(row = 1, column = 0, columnspan=6, sticky='w')
         self.label1 = LabelInApp(self.separator1, 1, 0, 3, txt = "Choose the directory "\
              "where files will they be created:")
         self.button1 = ButtonInApp(self.separator1, 1, 3, 3, txt = "Directory", functionApp =CallBacks.get_folder_path)
 
-        #drugi rząd przycisków
+        #Second row of buttons 
         self.label2 = LabelInApp(frame, 2, 0, 3, txt = "Name of folder:")
         self.input1 = EntryInApp(frame, width=20, font = font2)
         self.input1.grid(paddings, sticky = 'w', row = 2, column = 3, columnspan=3)
-        #trzeci rząd przycisków
+
+        #third row of buttons 
         self.label3 = LabelInApp(frame, 3, 0, 3, txt = "Enter the prefix for subfolders:")
         self.input2 =  EntryInApp(frame, width=20, font = font2)
         self.input2.grid(paddings, sticky = 'w', row = 3, column = 3, columnspan=3)
@@ -222,7 +223,8 @@ class AppliactionCFWDFL(tk.Tk):
         self.separator2 = ttk.Separator(frame, style='TSeparator', orient='horizontal')
 
         self.separator2.grid(row = 4, column = 0, columnspan=6)
-        #instrukcja dla wzoru szkła
+
+        #Instruction for user 
         self.instructions2 = MessageInApp(frame, width=800, fg='black',  font=fontmessageBox,
             text="Wprowadzony wzór szkła powinien być w postaci: \n" \
             "\n x Na2O ( 1 - x ) * ( 0.3 Fe2O3 0.7 P2O5 ) \n" \
@@ -231,12 +233,12 @@ class AppliactionCFWDFL(tk.Tk):
 
         self.instructions2.grid(paddings, row = 5, column = 3, sticky = 'w', columnspan=3)
 
-        #czwarty rząd przycisków
+        #4 row buttons
         self.label4 = LabelInApp(self.separator2, 0, 0, 3, txt = "Enter the glass equation:")
         self.inputGlassFormula =  EntryInApp(self.separator2, width=50, font = font1)
         self.inputGlassFormula.grid(paddings, sticky = 'w', row = 0, column = 3, columnspan=3)
 
-        #Piąty rząd przycisków
+        #5 row of buttons
         self.labelFrame = LabelFrameInApp(frame, backgroundColor, width=600, height=25, text='If many glasses', font=font2, fg='white')
         self.labelFrame.grid(row=6, column=0, columnspan=6, rowspan=1, sticky = 'w')
 
@@ -252,7 +254,7 @@ class AppliactionCFWDFL(tk.Tk):
         self.inputNumberOfSteps =  EntryInApp(self.labelFrame, width=10, font = font2)
         self.inputNumberOfSteps.grid(paddings, row = 0, column = 5, sticky = 'w')
 
-        #Szusty rząd przycisków
+        #S6 row of buttons
         self.frame3 = FrameInApp(frame, backgroundColor,  width=600, height=25)
         self.frame3.grid(row=7, column=0, columnspan=6, rowspan=1, sticky = 'w')
         frame3 = self.frame3
@@ -277,7 +279,7 @@ class AppliactionCFWDFL(tk.Tk):
         self.inputChargeOfatoms.insert(0, "eg. Fe: 3, P: 5")
 
 
-        #Komunikaty:
+        #Comunications:
         self.comunicatesToUserFrame = FrameInApp(frame, backgroundColor,  width=600)
         self.comunicatesToUserFrame.grid(row=9, column=0, columnspan=6, rowspan=1)
         self.instructions2 = MessageInApp(self.comunicatesToUserFrame, backgroundColor, width=800, font=font2, text="testowy")
@@ -293,8 +295,12 @@ class AppliactionCFWDFL(tk.Tk):
         self.frame6 = FrameInApp(frame, backgroundColor,  width=600, height=40)
         self.frame6.grid(row=11, column=0, columnspan=6, rowspan=1)
 
-app = App()
-applicationGUI = AppliactionCFWDFL()
+
+if __name__ == '__main__': 
+    app = App()
+    applicationGUI = AppliactionCFWDFL()
+else: 
+    raise('The __name__ == __main__')
 
 applicationGUI.mainloop()
 
