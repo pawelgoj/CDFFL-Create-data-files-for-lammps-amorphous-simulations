@@ -7,6 +7,8 @@ from cord_rand import *
 
 from menu_functions import MenuFunctions
 
+#TODO Trzba dodać kontrolę błędów 
+#TODO trzeba zaprogramować pasek stanu. 
 
 class Navigation:
     @staticmethod 
@@ -24,16 +26,30 @@ class CallBacks:
     def make_folders():
         nameOfFolder = applicationGUI.input1.get()
         prefixSubFolders = applicationGUI.input2.get()
+
         GlassFormula = applicationGUI.inputGlassFormula.get()
-        manyGlasses = not applicationGUI.checkIfOneGlass
-        startX = float(applicationGUI.inputStartX.get())
-        stepX = float(applicationGUI.inputStepX.get())
-        numberOfStep =  int(applicationGUI.inputNumberOfSteps.get())
+        print(GlassFormula)
+
+        manyGlasses = not oneGlass.get()
+        print(manyGlasses)
+
         numberOfAtoms = int(applicationGUI.inputNumberOfAtoms.get())
         densityOfGlass = applicationGUI.inputDensityOfGlass.get()
         chargeOfatoms = applicationGUI.inputChargeOfatoms.get()
-        app.make_folders_with_data_for_lammps(nameOfFolder, prefixSubFolders, GlassFormula,
-            manyGlasses, startX, stepX, numberOfAtoms, densityOfGlass, chargeOfatoms, numberOfStep)
+
+        if manyGlasses:
+            startX = float(applicationGUI.inputStartX.get())
+            stepX = float(applicationGUI.inputStepX.get())
+            numberOfStep =  int(applicationGUI.inputNumberOfSteps.get())
+            app.make_folders_with_data_for_lammps(nameOfFolder, prefixSubFolders, GlassFormula,
+            manyGlasses, numberOfAtoms, densityOfGlass, chargeOfatoms, startX, stepX, numberOfStep)
+        
+        else: 
+            app.make_folders_with_data_for_lammps(nameOfFolder, prefixSubFolders, GlassFormula,
+            manyGlasses, numberOfAtoms, densityOfGlass, chargeOfatoms, quantityOfMaterials=1)
+
+
+        
 
 class WidgetInApp(ABC, BaseWidget):
     def add_mouse_wheel_interaction(self):
@@ -217,8 +233,9 @@ class AppliactionCFWDFL(tk.Tk):
         self.label3 = LabelInApp(frame, 3, 0, 3, txt = "Enter the prefix for subfolders:")
         self.input2 =  EntryInApp(frame, width=20, font = font2)
         self.input2.grid(paddings, sticky = 'w', row = 3, column = 3, columnspan=3)
+        global oneGlass 
         oneGlass = tk.BooleanVar()
-        self.checkIfOneGlass = CheckbuttonInApp(frame, text='Only one glass', variable = oneGlass, onvalue=True, offvalue=False)
+        self.checkIfOneGlass = CheckbuttonInApp(frame, text='Only one glass', variable = oneGlass, onvalue = True, offvalue = False)
         self.checkIfOneGlass.grid(paddings, row = 5, column = 0, sticky = 'w', columnspan=3)
         self.separator2 = ttk.Separator(frame, style='TSeparator', orient='horizontal')
 
@@ -300,7 +317,7 @@ if __name__ == '__main__':
     app = App()
     applicationGUI = AppliactionCFWDFL()
 else: 
-    raise('The __name__ == __main__')
+    raise Exception('The __name__ == __main__ !!!!!')
 
 applicationGUI.mainloop()
 

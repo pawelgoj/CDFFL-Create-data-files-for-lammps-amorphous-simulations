@@ -15,7 +15,7 @@ class App:
 
 
     def make_folders_with_data_for_lammps(self, nameOfFolder: str, prefixSubFolder: str, equation: str, manyGlasses: bool,
-        initX: float, stepX: float, atomsInSingleMaterial: int, strDensityList: str, strCharges: str, quantityOfMaterials: int = 1):
+        atomsInSingleMaterial: int, strDensityList: str, strCharges: str, initX: float = 0, stepX: float = 0, quantityOfMaterials: int = 1):
 
         nrOfFolders = quantityOfMaterials
     
@@ -24,8 +24,8 @@ class App:
         subfoldersPaths = folder.create_sub_folders()
 
         materialsList = MaterialsList(EquationOfMaterial, CompositionOfMaterial,
-        manyGlasses, equation, initX, stepX, quantityOfMaterials, atomsInSingleMaterial,
-        strDensityList, strCharges, file = 'AtomMass.json')
+        manyGlasses, equation, initX, stepX, atomsInSingleMaterial,
+        strDensityList, strCharges, quantityOfMaterials, file = 'AtomMass.json')
 
         charges = materialsList.get_charges()
         materialsList, atomsMasses = materialsList.get_materials_list_and_atom_masses_dict()
@@ -146,8 +146,8 @@ class MaterialsList:
 
     def __init__(self, EquationOfMaterial: type, CompositionOfMaterial: type,
         manyglasses: bool, equationOfMaterial: str, initialValueOfX: float, 
-        stepValue: float, quantityOfMaterials: int, quantityOfAtomsInSingleMaterial: int,
-        GlassesDensities: str, chargesOfAtoms: str, file: str = 'AtomMass.json'): 
+        stepValue: float, quantityOfAtomsInSingleMaterial: int,
+        GlassesDensities: str, chargesOfAtoms: str, quantityOfMaterials: int = None, file: str = 'AtomMass.json'): 
 
         self.EquationOfMaterial = EquationOfMaterial
         self.CompositionOfMaterial = CompositionOfMaterial
@@ -158,6 +158,10 @@ class MaterialsList:
         self.quantityOfMaterials = quantityOfMaterials
         self.quantityOfAtomsInSingleMaterial = quantityOfAtomsInSingleMaterial
         self.manyglasses = manyglasses
+
+        if self.manyglasses == False:
+            self.quantityOfMaterials = 1
+
         self.GlassesDensities = MaterialsList.convert_string_densities_to_list(GlassesDensities)
         self.chargesOfAtoms = MaterialsList.convert_string_charges_to_dict(chargesOfAtoms)
         self.file = file
@@ -291,6 +295,8 @@ class EquationOfMaterial:
 
         for item in tempList:
             if item.count('(') == item.count(')'):
+                print(item)
+                print()
                 mathPart.append(eval(item))
             else:
                 mathPart.append(item)

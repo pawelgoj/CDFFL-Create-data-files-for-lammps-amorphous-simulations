@@ -202,8 +202,8 @@ class TestsMaterialsList:
         mock.get_CompositionOfMaterial_class.side_effect = MockFactory.get_CompositionOfMaterial_class
 
         materialsList = cord_rand.MaterialsList(mock.get_EquationOfMaterial_class(), mock.get_CompositionOfMaterial_class(),
-            manyglasses, equationOfMaterial, initialValueOfX,stepValue, quantityOfMaterials,
-            quantityOfAtomsInSingleMaterial, GlassesDensities, chargesOfAtoms, path)
+            manyglasses, equationOfMaterial, initialValueOfX,stepValue,
+            quantityOfAtomsInSingleMaterial, GlassesDensities, chargesOfAtoms, quantityOfMaterials, path)
 
         #When
         result = materialsList.get_materials_list_and_atom_masses_dict()
