@@ -2,18 +2,18 @@ import tkinter as tk
 import tkinter.font as font
 from tkinter import BaseWidget, Misc, ttk
 from tkinter import filedialog 
+from tkinter.messagebox import showinfo
 from abc import ABC
 from cord_rand import *
 
 from menu_functions import MenuFunctions
 
-#TODO Trzba dodać kontrolę błędów 
-#TODO trzeba zaprogramować pasek stanu. 
 
 class Navigation:
     @staticmethod 
     def use_mouse_wheel(event):
         secondCanvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
 
 class CallBacks: 
     @staticmethod
@@ -24,36 +24,55 @@ class CallBacks:
     @staticmethod
     #Funkcja wykonuje program
     def make_folders():
-        nameOfFolder = applicationGUI.input1.get()
-        prefixSubFolders = applicationGUI.input2.get()
-
-        GlassFormula = applicationGUI.inputGlassFormula.get()
-        print(GlassFormula)
-
-        manyGlasses = not oneGlass.get()
-        print(manyGlasses)
-
-        numberOfAtoms = int(applicationGUI.inputNumberOfAtoms.get())
-        densityOfGlass = applicationGUI.inputDensityOfGlass.get()
-        chargeOfatoms = applicationGUI.inputChargeOfatoms.get()
-
-        if manyGlasses:
-            startX = float(applicationGUI.inputStartX.get())
-            stepX = float(applicationGUI.inputStepX.get())
-            numberOfStep =  int(applicationGUI.inputNumberOfSteps.get())
-            app.make_folders_with_data_for_lammps(nameOfFolder, prefixSubFolders, GlassFormula,
-            manyGlasses, numberOfAtoms, densityOfGlass, chargeOfatoms, startX, stepX, numberOfStep)
+        instructions2.config(text= "I'm working on it!!!")
+        progress_bar['value'] = 0
+        applicationGUI.update_idletasks()
         
-        else: 
-            app.make_folders_with_data_for_lammps(nameOfFolder, prefixSubFolders, GlassFormula,
-            manyGlasses, numberOfAtoms, densityOfGlass, chargeOfatoms, quantityOfMaterials=1)
 
+        try:
+            nameOfFolder = applicationGUI.input1.get()
+            prefixSubFolders = applicationGUI.input2.get()
 
-        
+            GlassFormula = applicationGUI.inputGlassFormula.get()
+            densityOfGlass = applicationGUI.inputDensityOfGlass.get()
+            chargeOfatoms = applicationGUI.inputChargeOfatoms.get()
+
+            if nameOfFolder == '' or prefixSubFolders == '' or\
+                GlassFormula == '' or densityOfGlass == '' or chargeOfatoms == '':
+                raise Exception('Not all the necessary inputs have been entered!')
+            manyGlasses = not oneGlass.get()
+
+            try:
+                numberOfAtoms = int(applicationGUI.inputNumberOfAtoms.get())
+            except:
+                raise Exception('Not all the necessary inputs have been entered!')
+
+            if manyGlasses:
+                try:
+                    startX = float(applicationGUI.inputStartX.get())
+                    stepX = float(applicationGUI.inputStepX.get()) 
+                    numberOfStep =  int(applicationGUI.inputNumberOfSteps.get())
+                except:
+                    raise Exception('Not all the necessary inputs have been entered!')
+                app.make_folders_with_data_for_lammps(nameOfFolder, prefixSubFolders, GlassFormula,
+                manyGlasses, numberOfAtoms, densityOfGlass, chargeOfatoms, startX, stepX, numberOfStep, progress_bar, applicationGUI)
+            
+            else: 
+                app.make_folders_with_data_for_lammps(nameOfFolder, prefixSubFolders, GlassFormula,
+                manyGlasses, numberOfAtoms, densityOfGlass, chargeOfatoms, quantityOfMaterials=1, progress_bar=progress_bar, applicationGUI=applicationGUI)
+            
+            showinfo('Info', 'Directory with files has been created!!!!')
+            instructions2['text'] = 'Directory with files has been created!!!'
+
+        except BaseException as err:
+
+            showinfo('Show error', f'{err}')
+            
 
 class WidgetInApp(ABC, BaseWidget):
     def add_mouse_wheel_interaction(self):
         self.bind('<MouseWheel>', Navigation.use_mouse_wheel)
+
 
 class LabelInApp(tk.Label, WidgetInApp):
     """Label in aplication CFWDFL"""
@@ -66,7 +85,8 @@ class LabelInApp(tk.Label, WidgetInApp):
         super().__init__(root, backgroundColor, text = txt, fg='white', font=font1, anchor='nw')
         self.grid(paddings, sticky='w', row=row, column=column, columnspan=columspan)
         self.add_mouse_wheel_interaction()
-        
+
+
 class ButtonInApp(tk.Button, WidgetInApp):
     """ Button in aplication CFWDFL"""
 
@@ -83,6 +103,7 @@ class ButtonInApp(tk.Button, WidgetInApp):
         self.grid(paddings, sticky=sticky, row=row, column=column, columnspan=columspan)
         self.add_mouse_wheel_interaction()
 
+
 class EntryInApp(tk.Entry, WidgetInApp):
     def __init__(self, root: Misc, *args, **kwargs):
         super().__init__(root, *args, **kwargs)
@@ -93,10 +114,12 @@ class FrameInApp(tk.Frame, WidgetInApp):
         super().__init__(root, *args, **kwargs)
         self.add_mouse_wheel_interaction()
 
+
 class LabelFrameInApp(tk.LabelFrame, WidgetInApp):
     def __init__(self, root: Misc, *args, **kwargs):
         super().__init__(root, *args, **kwargs)
         self.add_mouse_wheel_interaction()
+
 
 class CheckbuttonInApp(tk.Checkbutton, WidgetInApp):
     def __init__(self, root: Misc, *args, **kwargs):
@@ -106,15 +129,18 @@ class CheckbuttonInApp(tk.Checkbutton, WidgetInApp):
         super().__init__(root, attributes, font = font1,  *args, **kwargs)
         self.add_mouse_wheel_interaction()
 
+
 class MessageInApp(tk.Message, WidgetInApp):
     def __init__(self, root: Misc, *args, fg: str='white', **kwargs):
         super().__init__(root, *args, fg=fg, **kwargs)
         self.add_mouse_wheel_interaction()
 
+
 class CanvaInApp(tk.Canvas, WidgetInApp):
     def __init__(self, root: Misc, *args, **kwargs):
         super().__init__(root, *args, **kwargs)
         self.add_mouse_wheel_interaction()
+
 
 class AppliactionCFWDFL(tk.Tk):
     """Object is a aplication window
@@ -299,11 +325,12 @@ class AppliactionCFWDFL(tk.Tk):
         #Comunications:
         self.comunicatesToUserFrame = FrameInApp(frame, backgroundColor,  width=600)
         self.comunicatesToUserFrame.grid(row=9, column=0, columnspan=6, rowspan=1)
-        self.instructions2 = MessageInApp(self.comunicatesToUserFrame, backgroundColor, width=800, font=font2, text="testowy")
-        self.instructions2.grid(paddings, row = 0, column = 0, columnspan=6, rowspan=1)
-        progresBar = ttk.Progressbar(self.comunicatesToUserFrame, orient='horizontal', length=200, mode='indeterminate')
-        progresBar.grid(paddings, row = 1, column = 0, columnspan=6, rowspan=1)
-        progresBar.start()
+        global instructions2
+        instructions2 = MessageInApp(self.comunicatesToUserFrame, backgroundColor, width=800, font=font2, text="")
+        instructions2.grid(paddings, row = 0, column = 0, columnspan=6, rowspan=1)
+        global progress_bar
+        progress_bar = ttk.Progressbar(self.comunicatesToUserFrame, orient='horizontal', length=200, mode='determinate')
+        progress_bar.grid(paddings, row = 1, column = 0, columnspan=6, rowspan=1)
 
 
         #Last row of buttons 
@@ -314,9 +341,12 @@ class AppliactionCFWDFL(tk.Tk):
 
 
 if __name__ == '__main__': 
-    app = App()
+    global applicationGUI
     applicationGUI = AppliactionCFWDFL()
+    app = App()
+
 else: 
+    print(__name__)
     raise Exception('The __name__ == __main__ !!!!!')
 
 applicationGUI.mainloop()

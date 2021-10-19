@@ -3,29 +3,42 @@ import re
 import json
 from fractions import Fraction
 from random import random
+from typing import Optional 
+from tkinter.ttk import Progressbar
 
-#TODO implement App class
+
+
 class App:
     def __init__(self):
         self.directory = ''
-
 
     def set_directory(self, directory):
         self.directory = directory
 
 
     def make_folders_with_data_for_lammps(self, nameOfFolder: str, prefixSubFolder: str, equation: str, manyGlasses: bool,
-        atomsInSingleMaterial: int, strDensityList: str, strCharges: str, initX: float = 0, stepX: float = 0, quantityOfMaterials: int = 1):
+        atomsInSingleMaterial: int, strDensityList: str, strCharges: str, initX: float = 0, stepX: float = 0,
+        quantityOfMaterials: int = 1, progress_bar: Optional[Progressbar] = None, applicationGUI: Optional[type] = None):
 
         nrOfFolders = quantityOfMaterials
-    
+
+        if progress_bar != None and applicationGUI != None: 
+            progress_bar['value'] = 20
+            applicationGUI.update_idletasks()
+
         folder = Folder(self.directory, nameOfFolder, prefixSubFolder, nrOfFolders)
+
         folder.create_folders()
+
         subfoldersPaths = folder.create_sub_folders()
 
         materialsList = MaterialsList(EquationOfMaterial, CompositionOfMaterial,
         manyGlasses, equation, initX, stepX, atomsInSingleMaterial,
         strDensityList, strCharges, quantityOfMaterials, file = 'AtomMass.json')
+
+        if progress_bar != None and applicationGUI != None: 
+            progress_bar['value'] = 40
+            applicationGUI.update_idletasks()
 
         charges = materialsList.get_charges()
         materialsList, atomsMasses = materialsList.get_materials_list_and_atom_masses_dict()
@@ -33,10 +46,36 @@ class App:
         filesForLammps = FilesForLammps(FileForLammps, subfoldersPaths, prefixSubFolder , materialsList, atomsMasses, charges)
         filesForLammps.make_files()
 
+        if progress_bar != None and applicationGUI != None: 
+            progress_bar['value'] = 70
+            applicationGUI.update_idletasks()
+
+        atoms_id = filesForLammps.get_atoms_id()
+        directory = self.directory + '/' + nameOfFolder
+
+        file_with_atoms_id = FileWithAtomsId(directory, atoms_id)
+        file_with_atoms_id.create_file()
+
+        if progress_bar != None and applicationGUI != None: 
+            progress_bar['value'] = 100
+            applicationGUI.update_idletasks()
+
+
+class FileWithAtomsId():
+    def __init__(self, path: str, atoms_id: dict):
+        self.path = path
+        self.atoms_id = atoms_id
+
+    def create_file(self):
+        path = self.path + '/atoms_id.txt'
+        with open(path, 'w') as file:
+            for name, id in self.atoms_id.items():
+                file.write(f'{name}: {id}\n')
 
 
 class FilesForLammps:
-    def __init__(self, FileForLammps: type, subfoldersPaths: list, prefixSubFolder: str, materialsList: list, atomsMasses: dict, charges: dict):
+    def __init__(self, FileForLammps: type, subfoldersPaths: list, prefixSubFolder: str, materialsList: list,
+         atomsMasses: dict, charges: dict):
         
         self.FileForLammps = FileForLammps
         self.prefixSubFolder = prefixSubFolder
@@ -46,19 +85,29 @@ class FilesForLammps:
         self.atomsMasses = atomsMasses
         self.FileForLammps = FileForLammps
 
+        atom_id = {}
+        for id, atom in enumerate(self.charges.keys(), 1):
+            atom_id.update({atom: id})
+
+        self.atom_id = atom_id
+
+
     def make_files(self):
         i = 0
         for subfolderPath in self.subfoldersPaths:
             name = self.prefixSubFolder + f"{i+1}"
             
             material = self.materialsList[i]
-            file = self.FileForLammps(name, material, self.charges, self.atomsMasses, subfolderPath)
+            file = self.FileForLammps(name, material, self.charges, self.atomsMasses, subfolderPath, self.atom_id)
             file.create_complete_file()
             i+= 1
+    
+    def get_atoms_id(self):
+        return self.atom_id
 
 
 class FileForLammps:
-    def __init__(self, name: str, material: dict, charges: dict, atomMasses: dict, subfolderPath: str):
+    def __init__(self, name: str, material: dict, charges: dict, atomMasses: dict, subfolderPath: str, atom_id: dict):
         self.path = f'{subfolderPath}\\{name}'
         self.name = name 
 
@@ -67,14 +116,18 @@ class FileForLammps:
 
         temporary_atomMasses = atomMasses.copy()
         temporary_charges = charges.copy()
-        for id, atom in enumerate(charges.keys(), 1):
-            temporary_charges[atom] = {'id': id, 'charge': charges[atom]}
-            temporary_atomMasses[atom] = {'id': id, 'mass': atomMasses[atom]}
+        
+        for atom in charges.keys():
+            temporary_charges[atom] = {'id': atom_id[atom], 'charge': charges[atom]}
+            temporary_atomMasses[atom] = {'id': atom_id[atom], 'mass': atomMasses[atom]}
 
+        self.atom_id = atom_id
 
-        self.length_of_simulation_box_edge = round(material['volume'] ** (1/3), 6)
         self.charges = temporary_charges
         self.atomMasses = temporary_atomMasses
+
+        self.length_of_simulation_box_edge = round(material['volume'] ** (1/3), 6)
+
         self.quantity = material['quantityOfAtoms']
         self.composition = material['composition'].copy()
 
@@ -147,7 +200,7 @@ class MaterialsList:
     def __init__(self, EquationOfMaterial: type, CompositionOfMaterial: type,
         manyglasses: bool, equationOfMaterial: str, initialValueOfX: float, 
         stepValue: float, quantityOfAtomsInSingleMaterial: int,
-        GlassesDensities: str, chargesOfAtoms: str, quantityOfMaterials: int = None, file: str = 'AtomMass.json'): 
+        GlassesDensities: str, chargesOfAtoms: str, quantityOfMaterials: Optional[int] = None, file: str = 'AtomMass.json'): 
 
         self.EquationOfMaterial = EquationOfMaterial
         self.CompositionOfMaterial = CompositionOfMaterial
@@ -161,6 +214,8 @@ class MaterialsList:
 
         if self.manyglasses == False:
             self.quantityOfMaterials = 1
+        elif self.quantityOfMaterials == None:
+            raise Exception('Not set quantity of materials!!!!!')
 
         self.GlassesDensities = MaterialsList.convert_string_densities_to_list(GlassesDensities)
         self.chargesOfAtoms = MaterialsList.convert_string_charges_to_dict(chargesOfAtoms)
@@ -231,7 +286,7 @@ class Folder:
     def __init__(self, path: str ='', name: str = '', prefix: str = '', nrOfFolders: int = 0):
         '''Folder class creates directory for input simulations files'''
         if path == '' or name == '' or prefix == '' or nrOfFolders == 0:
-            raise IncorectFilePath('Brak ścieżki do pliku!!!')
+            raise IncorectFilePath('No path to directory!!!')
         else:
             self.path = path
             self.name = name
@@ -295,8 +350,6 @@ class EquationOfMaterial:
 
         for item in tempList:
             if item.count('(') == item.count(')'):
-                print(item)
-                print()
                 mathPart.append(eval(item))
             else:
                 mathPart.append(item)
@@ -313,11 +366,9 @@ class EquationOfMaterial:
                 multiply = False 
             
             if multiply:
-                print('tu')
                 item = item.replace('(', '')
                 item = item.replace(' ', '')
                 tempList.append(float(item) * factorInFrontOfTheParenthesis)
-                print(item)
             else:
                 try:
                     factorInFrontOfTheParenthesis = float(item)

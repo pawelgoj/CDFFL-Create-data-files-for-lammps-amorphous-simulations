@@ -29,7 +29,6 @@ class Preconditions:
         path = os.path.join(self.file_path)
         os.mkdir(path)
         yield self.file_path
-
         try:
             shutil.rmtree(self.file_path)
         except:
@@ -287,25 +286,25 @@ class TestCreateFoldersAndSubFolders(Preconditions):
 
 
 @pytest.mark.usefixtures("setup")
-class TestsCreateFile(Preconditions):
+class TestsCreateFileForLammps(Preconditions):
 
     data_for_tests = ('Test', {'composition': {'FeIII': 26, 'O': 139, 'P': 40}, 'quantityOfAtoms': 205, 'volume': 3022.6969},
-        {'FeIII': 3, 'P': 5, 'O': -2}, {'FeIII': 55.845, 'P': 30.9738, 'O': 15.9994})
+        {'FeIII': 3, 'P': 5, 'O': -2}, {'FeIII': 55.845, 'P': 30.9738, 'O': 15.9994}, {'FeIII': 1, 'P': 2, 'O': 3})
 
     @allure.title("Crate file with title")
     @allure.description_html("""
     <p>Crate file with title</p>
     """)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses',
+    'name, material, charges, atomMasses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_crate_file_with_title(self, setup, name, material, charges, atomMasses):
+    def test_crate_file_with_title(self, setup, name, material, charges, atomMasses,  atom_id):
         #Given 
         sub_folder_path = setup
-        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
+        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path,  atom_id)
 
 
         #When 
@@ -323,17 +322,17 @@ class TestsCreateFile(Preconditions):
     <p>Write quantity of atoms</p>
     """)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses',
+    'name, material, charges, atomMasses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_write_quantity_of_atoms(self, setup, name, material, charges, atomMasses):
+    def test_write_quantity_of_atoms(self, setup, name, material, charges, atomMasses, atom_id):
 
         #Given 
-        TestsCreateFile.test_crate_file_with_title(self, setup, name, material, charges, atomMasses)
+        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atomMasses, atom_id)
         sub_folder_path = setup
-        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
+        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path, atom_id)
 
 
         #When 
@@ -353,18 +352,18 @@ class TestsCreateFile(Preconditions):
     <p>Write number of atom types</p>
     """)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses',
+    'name, material, charges, atomMasses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_write_number_of_atom_types(self, setup, name, material, charges, atomMasses):
+    def test_write_number_of_atom_types(self, setup, name, material, charges, atomMasses, atom_id):
         #Given 
-        TestsCreateFile.test_crate_file_with_title(self, setup, name, material, charges, atomMasses)
+        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atomMasses, atom_id)
         sub_folder_path = setup
 
 
-        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
+        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path, atom_id)
         #When 
         file_for_lammps.write_number_of_atom_types()
 
@@ -382,16 +381,16 @@ class TestsCreateFile(Preconditions):
     <p>Write system coordinates</p>
     """)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses',
+    'name, material, charges, atomMasses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_write_system_coordinates(self, setup, name, material, charges, atomMasses):
+    def test_write_system_coordinates(self, setup, name, material, charges, atomMasses, atom_id):
         #Given 
-        TestsCreateFile.test_crate_file_with_title(self, setup, name, material, charges, atomMasses)
+        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atomMasses, atom_id)
         sub_folder_path = setup
-        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
+        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path, atom_id)
 
 
         #When 
@@ -411,17 +410,17 @@ class TestsCreateFile(Preconditions):
     <p>Write masses of atoms</p>
     """)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses',
+    'name, material, charges, atomMasses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_write_masses_of_atoms(self, setup, name, material, charges, atomMasses):
+    def test_write_masses_of_atoms(self, setup, name, material, charges, atomMasses, atom_id):
 
         #Given 
-        TestsCreateFile.test_crate_file_with_title(self, setup, name, material, charges, atomMasses)
+        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atomMasses, atom_id)
         sub_folder_path = setup
-        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
+        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path, atom_id)
 
 
         #When 
@@ -441,17 +440,17 @@ class TestsCreateFile(Preconditions):
     <p>Write table with atoms positions</p>
     """)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses',
+    'name, material, charges, atomMasses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_write_table_with_atoms_positions(self, setup, name, material, charges, atomMasses):
+    def test_write_table_with_atoms_positions(self, setup, name, material, charges, atomMasses, atom_id):
 
         #Given 
-        TestsCreateFile.test_crate_file_with_title(self, setup, name, material, charges, atomMasses)
+        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atomMasses, atom_id)
         sub_folder_path = setup
-        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
+        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path, atom_id)
 
         def get_correct_number_of_atom_types(charges, material):
             correct_values = []
@@ -495,20 +494,19 @@ class TestsCreateFile(Preconditions):
         assert get_correct_number_of_atom_types(charges, material) == cunt_atom_types_in_file(sub_folder_path, name)
 
     @allure.title("Write table with atoms positions")
-
     @allure.description_html("""
     <p>Write table with atoms positions</p>
     """)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses',
+    'name, material, charges, atomMasses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_create_file_with_all_necessary_data(self, setup, name, material, charges, atomMasses):
+    def test_create_file_with_all_necessary_data(self, setup, name, material, charges, atomMasses, atom_id):
         #Given 
         sub_folder_path = setup
-        file = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path)
+        file = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path, atom_id)
 
         #When 
         file.create_complete_file()
@@ -530,7 +528,6 @@ class TestsFilesForLammps(Preconditions):
     @allure.description_html("""
     <p>Create files with data for Lammps simulations in subfolders</p>
     """)
-    #@pytest.mark.skip("Test not implement yet!!!")
     @pytest.mark.parametrize(
     "nameOfFolder,prefixOfSubFolder,nrOfSubFoldersFolders,materialsList, atomsMasses,charges",
         [('Dane', 'dane', 3,
@@ -542,7 +539,6 @@ class TestsFilesForLammps(Preconditions):
         ]
 
     )
-    
     def test_make_files(self, setup, nameOfFolder, prefixOfSubFolder, nrOfSubFoldersFolders, materialsList, atomsMasses, charges):
         
         #Given
@@ -559,8 +555,61 @@ class TestsFilesForLammps(Preconditions):
         for i in range(1,nrOfSubFoldersFolders + 1):
             subFolder = 'dane' + str(i)
             file = 'dane' + str(i)
-            assert os.path.exists(path +'/Dane/' + subFolder + '/' + file + '.txt') 
+            assert os.path.exists(path +'/Dane/' + subFolder + '/' + file + '.txt')
+    
+    
+    @allure.title('Get atom names with id')
+    @allure.description_html("""
+        <p>Get atom names with id from object of class TestsFilesForLammps</p>
+        """)
+    @pytest.mark.parametrize(
+    "nameOfFolder,prefixOfSubFolder,nrOfSubFoldersFolders,materialsList, atomsMasses,charges",
+        [('Dane', 'dane', 3,
+        [ 
+            {'composition': {'FeIII': 12, 'O': 138, 'P': 48}, 'quantityOfAtoms': 198, 'volume': 2899.1681},
+            {'composition': {'FeIII': 20, 'O': 140, 'P': 44}, 'quantityOfAtoms': 204, 'volume': 3014.3020},
+            {'composition': {'FeIII': 26, 'O': 139, 'P': 40}, 'quantityOfAtoms': 205, 'volume': 3022.6969}
+        ], {'FeIII': 55.845, 'P': 30.9738, 'O': 15.9994}, {'FeIII': 3, 'P': 5, 'O': -2})
+        ]
 
+    )
+    def test_get_atoms_id(self, setup, nameOfFolder, prefixOfSubFolder, nrOfSubFoldersFolders, materialsList, atomsMasses, charges):
+
+        #Given
+        path = setup
+        folder = cord_rand.Folder(path, nameOfFolder, prefixOfSubFolder, nrOfSubFoldersFolders)
+        folder.create_folders()
+        subfoldersPaths = folder.create_sub_folders()
+        filesForLammps = cord_rand.FilesForLammps(cord_rand.FileForLammps, subfoldersPaths, prefixOfSubFolder, materialsList, atomsMasses, charges)
+
+        #When 
+        atoms_names_with_id = filesForLammps.get_atoms_id()
+
+        #Then 
+        assert atoms_names_with_id == {'FeIII': 1, 'P': 2, 'O': 3}
+
+
+@pytest.mark.usefixtures("setup")
+class TestFileWithAtomsId(Preconditions):
+
+    @allure.title("Create file with atoms id")
+    @allure.description_html("""
+    <p>Test of method create_file for class FileWithAtomsId</p>
+    """)
+    @pytest.mark.parametrize(
+        'atoms_id',
+        [({'FeIII': 1, 'P': 2, 'O': 3})]
+    )
+    def test_create_file(self, setup, atoms_id):
+        path = setup
+        file = cord_rand.FileWithAtomsId(setup, atoms_id)
+        file.create_file()
+
+        path = path  + '/atoms_id.txt'
+        with open(path, 'r' ) as file:
+            text_in_file = file.read()
+
+        assert 'FeIII: 1\nP: 2\nO: 3' in text_in_file
 
 #integration tests of App logic 
 class TestsApp():
