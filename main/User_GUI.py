@@ -4,10 +4,9 @@ from tkinter import BaseWidget, Misc, ttk
 from tkinter import filedialog 
 from tkinter.messagebox import showinfo
 from abc import ABC
-from cord_rand import *
+from program.cord_rand import *
 
-from menu_functions import MenuFunctions
-
+from program.menu_functions import MenuFunctions
 
 class Navigation:
     @staticmethod 

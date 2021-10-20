@@ -12,8 +12,10 @@ import shutil
 
 from fractions import Fraction
 
-from main import cord_rand
-from test.mocks import MockFactory
+from main.program import cord_rand
+from mocks import MockFactory
+
+import pyautogui
 
 
 
@@ -162,9 +164,9 @@ class TestsMaterialsList:
     @pytest.mark.parametrize(
     'composition,filePath,response',
     [
-        ({'Na': 214, 'P': 150, 'Fe': 64, 'O': 578}, 'main/AtomMass.json',
+        ({'Na': 214, 'P': 150, 'Fe': 64, 'O': 578}, 'main/program/AtomMass.json',
         {'Na': 22.9898, 'P': 30.9738, 'Fe': 55.845, 'O': 15.9994}),
-        ({'Na': 214, 'P': 150, 'FeIII': 64, 'O': 578}, 'main/AtomMass.json',
+        ({'Na': 214, 'P': 150, 'FeIII': 64, 'O': 578}, 'main/program/AtomMass.json',
         {'Na': 22.9898, 'P': 30.9738, 'FeIII': 55.845, 'O': 15.9994})
     ]
     )
@@ -183,7 +185,7 @@ class TestsMaterialsList:
         GlassesDensities,chargesOfAtoms,path,resultTuple,resultCharges''',
     [
         (True, 'x FeIII2O3 ( 1 - x ) P2O5', 0.2, 0.1, 3, 200, '2.5, 2.6, 2.7', 'FeIII: 3, P: 5, O: -2', 
-        'main/AtomMass.json',
+        'main/program/AtomMass.json',
         ([ 
             {'composition': {'FeIII': 12, 'O': 138, 'P': 48}, 'quantityOfAtoms': 198, 'volume': 2899.1681},
             {'composition': {'FeIII': 20, 'O': 140, 'P': 44}, 'quantityOfAtoms': 204, 'volume': 3014.3020},
@@ -611,6 +613,32 @@ class TestFileWithAtomsId(Preconditions):
 
         assert 'FeIII: 1\nP: 2\nO: 3' in text_in_file
 
-#integration tests of App logic 
-class TestsApp():
-    pass
+
+@pytest.mark.usefixtures("setup")
+class TestsApp(Preconditions):
+    @allure.title("Create folders with data for Lammps App test -integrate test")
+    @allure.description_html("""
+    <p>Create folders with data for Lammps App test, integration test</p>
+    """)
+    @pytest.mark.parametrize(
+        'nameOfFolder,prefixSubFolder,equation, manyGlasses,atomsInSingleMaterial,'\
+        'strDensityList, strCharges, initX, stepX, quantityOfMaterials, file_json_path',
+        [('Test', 'Test', 'x Na2O (1 - x ) ( 0.3 Fe2O3 0.7 P2O5 )',
+        True, 10000, '3, 2.7, 2.6, 2.5, 2.4', 'Fe: 3, P: 5, Na: 1, O: -2', 
+        0, 0.1, 5, 'main/program/AtomMass.json')]
+    )
+    def test_make_folders_with_data_for_lammps(self, setup, nameOfFolder, prefixSubFolder, equation, manyGlasses,
+        atomsInSingleMaterial, strDensityList, strCharges, initX, stepX, quantityOfMaterials, file_json_path):
+
+        #Given
+        app = cord_rand.App()
+        app.set_directory(setup)
+
+        #When
+        app.make_folders_with_data_for_lammps(nameOfFolder, prefixSubFolder, equation, manyGlasses,
+        atomsInSingleMaterial, strDensityList, strCharges, initX, stepX, quantityOfMaterials, file_json=file_json_path)
+
+        #Then 
+        assert os.path.isfile(setup + '/' + nameOfFolder + '/' + prefixSubFolder + '1' + '/' + prefixSubFolder + '1.txt')
+
+        

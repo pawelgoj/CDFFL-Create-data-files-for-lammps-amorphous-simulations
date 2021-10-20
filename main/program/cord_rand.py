@@ -8,6 +8,7 @@ from tkinter.ttk import Progressbar
 
 
 
+
 class App:
     def __init__(self):
         self.directory = ''
@@ -18,7 +19,8 @@ class App:
 
     def make_folders_with_data_for_lammps(self, nameOfFolder: str, prefixSubFolder: str, equation: str, manyGlasses: bool,
         atomsInSingleMaterial: int, strDensityList: str, strCharges: str, initX: float = 0, stepX: float = 0,
-        quantityOfMaterials: int = 1, progress_bar: Optional[Progressbar] = None, applicationGUI: Optional[type] = None):
+        quantityOfMaterials: int = 1, progress_bar: Optional[Progressbar] = None, applicationGUI: Optional[type] = None,
+        file_json: str = 'program/AtomMass.json'):
 
         nrOfFolders = quantityOfMaterials
 
@@ -34,7 +36,7 @@ class App:
 
         materialsList = MaterialsList(EquationOfMaterial, CompositionOfMaterial,
         manyGlasses, equation, initX, stepX, atomsInSingleMaterial,
-        strDensityList, strCharges, quantityOfMaterials, file = 'AtomMass.json')
+        strDensityList, strCharges, quantityOfMaterials, file = file_json)
 
         if progress_bar != None and applicationGUI != None: 
             progress_bar['value'] = 40
@@ -200,7 +202,7 @@ class MaterialsList:
     def __init__(self, EquationOfMaterial: type, CompositionOfMaterial: type,
         manyglasses: bool, equationOfMaterial: str, initialValueOfX: float, 
         stepValue: float, quantityOfAtomsInSingleMaterial: int,
-        GlassesDensities: str, chargesOfAtoms: str, quantityOfMaterials: Optional[int] = None, file: str = 'AtomMass.json'): 
+        GlassesDensities: str, chargesOfAtoms: str, quantityOfMaterials: Optional[int] = None, file: str = 'program/AtomMass.json'): 
 
         self.EquationOfMaterial = EquationOfMaterial
         self.CompositionOfMaterial = CompositionOfMaterial
@@ -272,7 +274,7 @@ class MaterialsList:
             raise Exception('Wrong syntax of charges!')
 
     @staticmethod
-    def read_atoms_masses_from_json_file(composition, file: str = 'AtomMass.json') -> dict:
+    def read_atoms_masses_from_json_file(composition, file: str = 'program/AtomMass.json') -> dict:
         with open(file, 'r') as fileJ:
             jsonFileContent = json.load(fileJ)
         atomMassesDict = {}
