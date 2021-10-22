@@ -6,8 +6,12 @@ from random import random
 from typing import Optional 
 from tkinter.ttk import Progressbar
 
+try: 
+    from program.config import Config
+except:
+    from main.program.config import Config
 
-
+PATH = Config.PATH_TO_JSON_FILE_WITH_MASSES
 
 class App:
     def __init__(self):
@@ -16,51 +20,50 @@ class App:
     def set_directory(self, directory):
         self.directory = directory
 
+    def make_folders_with_data_for_lammps(self, name_of_folder: str, prefix_sub_folder: str, equation: str, many_glasses: bool,
+        atoms_in_single_material: int, str_density_list: str, str_charges: str, init_x: float = 0, step_x: float = 0,
+        quantity_of_materials: int = 1, progress_bar: Optional[Progressbar] = None, application_gui: Optional[type] = None,
+        file_json: str = PATH + 'program/AtomMass.json'):
 
-    def make_folders_with_data_for_lammps(self, nameOfFolder: str, prefixSubFolder: str, equation: str, manyGlasses: bool,
-        atomsInSingleMaterial: int, strDensityList: str, strCharges: str, initX: float = 0, stepX: float = 0,
-        quantityOfMaterials: int = 1, progress_bar: Optional[Progressbar] = None, applicationGUI: Optional[type] = None,
-        file_json: str = 'program/AtomMass.json'):
+        nr_of_folders = quantity_of_materials
 
-        nrOfFolders = quantityOfMaterials
-
-        if progress_bar != None and applicationGUI != None: 
+        if progress_bar != None and application_gui != None: 
             progress_bar['value'] = 20
-            applicationGUI.update_idletasks()
+            application_gui.update_idletasks()
 
-        folder = Folder(self.directory, nameOfFolder, prefixSubFolder, nrOfFolders)
+        folder = Folder(self.directory, name_of_folder, prefix_sub_folder, nr_of_folders)
 
         folder.create_folders()
 
-        subfoldersPaths = folder.create_sub_folders()
+        subfolders_paths = folder.create_sub_folders()
 
-        materialsList = MaterialsList(EquationOfMaterial, CompositionOfMaterial,
-        manyGlasses, equation, initX, stepX, atomsInSingleMaterial,
-        strDensityList, strCharges, quantityOfMaterials, file = file_json)
+        materials_list = MaterialsList(EquationOfMaterial, CompositionOfMaterial,
+        many_glasses, equation, init_x, step_x, atoms_in_single_material,
+        str_density_list, str_charges, quantity_of_materials, file = file_json)
 
-        if progress_bar != None and applicationGUI != None: 
+        if progress_bar != None and application_gui != None: 
             progress_bar['value'] = 40
-            applicationGUI.update_idletasks()
+            application_gui.update_idletasks()
 
-        charges = materialsList.get_charges()
-        materialsList, atomsMasses = materialsList.get_materials_list_and_atom_masses_dict()
+        charges = materials_list.get_charges()
+        materials_list, atoms_masses = materials_list.get_materials_list_and_atom_masses_dict()
 
-        filesForLammps = FilesForLammps(FileForLammps, subfoldersPaths, prefixSubFolder , materialsList, atomsMasses, charges)
+        filesForLammps = FilesForLammps(FileForLammps, subfolders_paths, prefix_sub_folder , materials_list, atoms_masses, charges)
         filesForLammps.make_files()
 
-        if progress_bar != None and applicationGUI != None: 
+        if progress_bar != None and application_gui != None: 
             progress_bar['value'] = 70
-            applicationGUI.update_idletasks()
+            application_gui.update_idletasks()
 
         atoms_id = filesForLammps.get_atoms_id()
-        directory = self.directory + '/' + nameOfFolder
+        directory = self.directory + '/' + name_of_folder
 
         file_with_atoms_id = FileWithAtomsId(directory, atoms_id)
         file_with_atoms_id.create_file()
 
-        if progress_bar != None and applicationGUI != None: 
+        if progress_bar != None and application_gui != None: 
             progress_bar['value'] = 100
-            applicationGUI.update_idletasks()
+            application_gui.update_idletasks()
 
 
 class FileWithAtomsId():
@@ -76,16 +79,16 @@ class FileWithAtomsId():
 
 
 class FilesForLammps:
-    def __init__(self, FileForLammps: type, subfoldersPaths: list, prefixSubFolder: str, materialsList: list,
-         atomsMasses: dict, charges: dict):
+    def __init__(self, File_for_lammps: type, subfolders_paths: list, prefix_sub_folder: str, materials_list: list,
+         atoms_masses: dict, charges: dict):
         
-        self.FileForLammps = FileForLammps
-        self.prefixSubFolder = prefixSubFolder
-        self.subfoldersPaths = subfoldersPaths
-        self.materialsList = materialsList
+        self.File_for_lammps = File_for_lammps
+        self.prefix_sub_folder = prefix_sub_folder
+        self.subfolders_paths = subfolders_paths
+        self.materials_list = materials_list
         self.charges = charges
-        self.atomsMasses = atomsMasses
-        self.FileForLammps = FileForLammps
+        self.atoms_masses = atoms_masses
+        self.File_for_lammps = File_for_lammps
 
         atom_id = {}
         for id, atom in enumerate(self.charges.keys(), 1):
@@ -93,14 +96,13 @@ class FilesForLammps:
 
         self.atom_id = atom_id
 
-
     def make_files(self):
         i = 0
-        for subfolderPath in self.subfoldersPaths:
-            name = self.prefixSubFolder + f"{i+1}"
+        for subfolder_path in self.subfolders_paths:
+            name = self.prefix_sub_folder + f"{i+1}"
             
-            material = self.materialsList[i]
-            file = self.FileForLammps(name, material, self.charges, self.atomsMasses, subfolderPath, self.atom_id)
+            material = self.materials_list[i]
+            file = self.File_for_lammps(name, material, self.charges, self.atoms_masses, subfolder_path, self.atom_id)
             file.create_complete_file()
             i+= 1
     
@@ -109,24 +111,24 @@ class FilesForLammps:
 
 
 class FileForLammps:
-    def __init__(self, name: str, material: dict, charges: dict, atomMasses: dict, subfolderPath: str, atom_id: dict):
-        self.path = f'{subfolderPath}\\{name}'
+    def __init__(self, name: str, material: dict, charges: dict, atom_masses: dict, subfolder_path: str, atom_id: dict):
+        self.path = f'{subfolder_path}\\{name}'
         self.name = name 
 
-        if len(charges) != len(atomMasses):
+        if len(charges) != len(atom_masses):
             raise Exception('length of charges dict != length of atom masses dict')
 
-        temporary_atomMasses = atomMasses.copy()
+        temporary_atom_masses = atom_masses.copy()
         temporary_charges = charges.copy()
         
         for atom in charges.keys():
             temporary_charges[atom] = {'id': atom_id[atom], 'charge': charges[atom]}
-            temporary_atomMasses[atom] = {'id': atom_id[atom], 'mass': atomMasses[atom]}
+            temporary_atom_masses[atom] = {'id': atom_id[atom], 'mass': atom_masses[atom]}
 
         self.atom_id = atom_id
 
         self.charges = temporary_charges
-        self.atomMasses = temporary_atomMasses
+        self.atom_masses = temporary_atom_masses
 
         self.length_of_simulation_box_edge = round(material['volume'] ** (1/3), 6)
 
@@ -142,9 +144,9 @@ class FileForLammps:
             file.write(f'{self.quantity} atoms\n\n')
     
     def write_number_of_atom_types(self):
-        numberOfAtomsTypes = len(self.composition)
+        number_of_atoms_types = len(self.composition)
         with open(f'{self.path}.txt', 'a') as file:
-            file.write(f'{numberOfAtomsTypes} atom types\n\n')
+            file.write(f'{number_of_atoms_types} atom types\n\n')
  
     def write_system_coordinates(self):
         with open(f'{self.path}.txt', 'a') as file:
@@ -155,7 +157,7 @@ class FileForLammps:
     def write_masses_of_atoms(self):
         with open(f'{self.path}.txt', 'a') as file:
             file.write('Masses\n\n')
-            for value in self.atomMasses.values():
+            for value in self.atom_masses.values():
                 file.write(f"{value['id']} {value['mass']}\n")
             file.write('\n') 
 
@@ -200,169 +202,169 @@ class MaterialsList:
     """
 
     def __init__(self, EquationOfMaterial: type, CompositionOfMaterial: type,
-        manyglasses: bool, equationOfMaterial: str, initialValueOfX: float, 
-        stepValue: float, quantityOfAtomsInSingleMaterial: int,
-        GlassesDensities: str, chargesOfAtoms: str, quantityOfMaterials: Optional[int] = None, file: str = 'program/AtomMass.json'): 
+        many_glasses: bool, equation_of_material: str, initial_value_of_x: float, 
+        step_value: float, quantity_of_atoms_in_single_material: int,
+        glasses_densities: str, charges_of_atoms: str, quantity_of_materials: Optional[int] = None, file: str = PATH + 'program/AtomMass.json'): 
 
         self.EquationOfMaterial = EquationOfMaterial
         self.CompositionOfMaterial = CompositionOfMaterial
 
-        self.equationOfMaterial = equationOfMaterial
-        self.initialValueOfX = initialValueOfX
-        self.stepValue = stepValue
-        self.quantityOfMaterials = quantityOfMaterials
-        self.quantityOfAtomsInSingleMaterial = quantityOfAtomsInSingleMaterial
-        self.manyglasses = manyglasses
+        self.equation_of_material = equation_of_material
+        self.initial_value_of_x = initial_value_of_x
+        self.step_value = step_value
+        self.quantity_of_materials = quantity_of_materials
+        self.quantity_of_atoms_in_single_material = quantity_of_atoms_in_single_material
+        self.many_glasses = many_glasses
 
-        if self.manyglasses == False:
-            self.quantityOfMaterials = 1
-        elif self.quantityOfMaterials == None:
+        if self.many_glasses == False:
+            self.quantity_of_materials = 1
+        elif self.quantity_of_materials == None:
             raise Exception('Not set quantity of materials!!!!!')
 
-        self.GlassesDensities = MaterialsList.convert_string_densities_to_list(GlassesDensities)
-        self.chargesOfAtoms = MaterialsList.convert_string_charges_to_dict(chargesOfAtoms)
+        self.glasses_densities = MaterialsList.convert_string_densities_to_list(glasses_densities)
+        self.charges_of_atoms = MaterialsList.convert_string_charges_to_dict(charges_of_atoms)
         self.file = file
 
     #the two functionalities were combined on purpose
     def get_materials_list_and_atom_masses_dict(self) -> tuple:
-        materialsList = []
+        materials_list = []
         i = 0 
-        for glassNr in range(self.quantityOfMaterials):
+        for glassNr in range(self.quantity_of_materials):
 
-            xValue = (glassNr * self.stepValue) + self.initialValueOfX
-            equationOfMaterial = self.EquationOfMaterial(self.equationOfMaterial, self.manyglasses, xValue)
-            proportionsOfAtoms = equationOfMaterial.get_proportion_of_atoms()
-            composition = self.CompositionOfMaterial(proportionsOfAtoms, self.quantityOfAtomsInSingleMaterial)
+            x_value = (glassNr * self.step_value) + self.initial_value_of_x
+            equation_of_material = self.EquationOfMaterial(self.equation_of_material, self.many_glasses, x_value)
+            proportions_of_atoms = equation_of_material.get_proportion_of_atoms()
+            composition = self.CompositionOfMaterial(proportions_of_atoms, self.quantity_of_atoms_in_single_material)
             composition = composition.get_atoms_in_system() 
             if i == 0:
-                atomsMasses = MaterialsList.read_atoms_masses_from_json_file(composition, self.file)
+                atoms_masses = MaterialsList.read_atoms_masses_from_json_file(composition, self.file)
 
-            massOfMaterial = 0 
-            quantityOfAllAtoms = 0
+            mass_of_material = 0 
+            quantity_of_all_atoms = 0
             for (key, quantity) in composition.items():
-                atomInComposition = key
-                quantityOfAllAtoms += quantity
-                massOfMaterial = massOfMaterial + \
-                    ( atomsMasses[atomInComposition] * quantity ) / Constants.AvogadroConstant
+                atom_in_composition = key
+                quantity_of_all_atoms += quantity
+                mass_of_material = mass_of_material + \
+                    (atoms_masses[atom_in_composition] * quantity ) / Constants.avogadro_constant
 
         
-            volume = round(( massOfMaterial / self.GlassesDensities[i] ) * ((10 ** 8) ** 3), 4)
-            materialsList.append({'composition': composition, 'quantityOfAtoms': quantityOfAllAtoms, 'volume': volume })
+            volume = round(( mass_of_material / self.glasses_densities[i] ) * ((10 ** 8) ** 3), 4)
+            materials_list.append({'composition': composition, 'quantityOfAtoms': quantity_of_all_atoms, 'volume': volume })
             i += 1
 
-        return materialsList, atomsMasses
+        return materials_list, atoms_masses
     
     def get_charges(self):
-        return self.chargesOfAtoms
+        return self.charges_of_atoms
 
     @staticmethod
-    def convert_string_densities_to_list(GlassesDensities: str) -> list:
+    def convert_string_densities_to_list(glasses_densities: str) -> list:
         try:
-            splitted = GlassesDensities.split(',')
+            splitted = glasses_densities.split(',')
             splitted = [float(item) for item in splitted]
             return splitted
         except:
             raise Exception('Wrong syntax of density list string!')
 
     @staticmethod
-    def convert_string_charges_to_dict(chargesOfAtoms) -> dict:
+    def convert_string_charges_to_dict(charges_of_atoms) -> dict:
         try:
-            splitted = chargesOfAtoms.split(',')
+            splitted = charges_of_atoms.split(',')
             splitted = {(item.split(':')[0]).strip(): float(item.split(':')[1]) for item in splitted}
             return splitted
         except:
             raise Exception('Wrong syntax of charges!')
 
     @staticmethod
-    def read_atoms_masses_from_json_file(composition, file: str = 'program/AtomMass.json') -> dict:
+    def read_atoms_masses_from_json_file(composition, file: str = PATH + 'program/AtomMass.json') -> dict:
         with open(file, 'r') as fileJ:
-            jsonFileContent = json.load(fileJ)
-        atomMassesDict = {}
+            json_file_content = json.load(fileJ)
+        atom_masses_dict = {}
         for atom in composition.keys():
-            atomInJson = atom[0:2]
-            atomMassesDict.update({atom : jsonFileContent[atomInJson]})
-        return atomMassesDict
+            atom_in_json = atom[0:2]
+            atom_masses_dict.update({atom : json_file_content[atom_in_json]})
+        return atom_masses_dict
 
 
 class Folder: 
-    def __init__(self, path: str ='', name: str = '', prefix: str = '', nrOfFolders: int = 0):
+    def __init__(self, path: str ='', name: str = '', prefix: str = '', nr_of_folders: int = 0):
         '''Folder class creates directory for input simulations files'''
-        if path == '' or name == '' or prefix == '' or nrOfFolders == 0:
+        if path == '' or name == '' or prefix == '' or nr_of_folders == 0:
             raise IncorectFilePath('No path to directory!!!')
         else:
             self.path = path
             self.name = name
             self.prefix = prefix
-            self.nrOfFolders = nrOfFolders
+            self.nr_of_folders = nr_of_folders
         
     def create_folders(self) -> None:
         path = os.path.join(self.path, self.name)
         os.mkdir(path)
     
     def create_sub_folders(self) -> list:
-        pathsList = []
-        for i in range(1, self.nrOfFolders +1):
-            fileName = self.prefix + str(i)
-            path = os.path.join(self.path, self.name, fileName)
-            pathsList.append(path)
+        paths_list = []
+        for i in range(1, self.nr_of_folders +1):
+            file_name = self.prefix + str(i)
+            path = os.path.join(self.path, self.name, file_name)
+            paths_list.append(path)
             os.mkdir(path)
-        return pathsList
+        return paths_list
 
 
 class EquationOfMaterial: 
 
-    def __init__(self, equation: str, manyGlasses: bool = False, xValue: float = 0):
+    def __init__(self, equation: str, many_glasses: bool = False, x_value: float = 0):
         self.equation = equation 
-        self.manyGlasses = manyGlasses
-        self.xValue = xValue
+        self.many_glasses = many_glasses
+        self.x_value = x_value
 
     def get_proportion_of_atoms(self) -> dict:
-        proportionsOfOxides = self.get_proportions_of_oxides()
-        proportionsOfAtoms = EquationOfMaterial.calculate_proportions_of_atoms(proportionsOfOxides)
-        return proportionsOfAtoms
+        proportions_of_oxides = self.get_proportions_of_oxides()
+        proportions_of_atoms = EquationOfMaterial.calculate_proportions_of_atoms(proportions_of_oxides)
+        return proportions_of_atoms
 
     def get_proportions_of_oxides(self) -> dict:
 
-        if self.manyGlasses:
-            replaced = self.equation.replace("x", str(self.xValue))
+        if self.many_glasses:
+            replaced = self.equation.replace("x", str(self.x_value))
         else: 
             replaced = self.equation
 
-        mathPart = re.split(r"[a-zA-Z]\S+", replaced)
+        math_part = re.split(r"[a-zA-Z]\S+", replaced)
 
-        mathPartToSort = mathPart.copy()
-        mathPartToSort.sort(reverse=True, key = lambda item: len(item))
-        for item in mathPartToSort:
+        math_part_to_sort = math_part.copy()
+        math_part_to_sort.sort(reverse=True, key = lambda item: len(item))
+        for item in math_part_to_sort:
             if item != '':
                 replaced = replaced.replace(str(item), ' ')
-        del mathPartToSort
+        del math_part_to_sort
 
-        tempList =[]
-        for item in mathPart: 
+        temp_list =[]
+        for item in math_part: 
             item = item.replace(') (', ')@@(')
             item = item.split('@@')
-            tempList = tempList + item
+            temp_list = temp_list + item
 
-        mathPart = []
+        math_part = []
 
         try:
-            tempList.remove('')
+            temp_list.remove('')
         except:
             pass
 
-        for item in tempList:
+        for item in temp_list:
             if item.count('(') == item.count(')'):
-                mathPart.append(eval(item))
+                math_part.append(eval(item))
             else:
-                mathPart.append(item)
+                math_part.append(item)
         
-        tempList = []
-        factorInFrontOfTheParenthesis = 0
+        temp_list = []
+        factor_in_front_of_the_parenthesis = 0
         multiply = False
-        for item in mathPart:
+        for item in math_part:
             item = str(item)
             if -1 != item.find('('):
-                tempList.pop()
+                temp_list.pop()
                 multiply = True
             elif -1 != item.find(')'):
                 multiply = False 
@@ -370,119 +372,119 @@ class EquationOfMaterial:
             if multiply:
                 item = item.replace('(', '')
                 item = item.replace(' ', '')
-                tempList.append(float(item) * factorInFrontOfTheParenthesis)
+                temp_list.append(float(item) * factor_in_front_of_the_parenthesis)
             else:
                 try:
-                    factorInFrontOfTheParenthesis = float(item)
-                    tempList.append(item)
+                    factor_in_front_of_the_parenthesis = float(item)
+                    temp_list.append(item)
                 except:
                     continue
 
-        mathPart =  tempList.copy()
-        del tempList
-        textPart = replaced.split(' ')
-        textPart = [item for item in textPart if item != '']  
+        math_part =  temp_list.copy()
+        del temp_list
+        text_part = replaced.split(' ')
+        text_part = [item for item in text_part if item != '']  
 
-        proportionsOfOxides = {}
+        proportions_of_oxides = {}
 
-        if len(textPart) == len(mathPart):
-            for i in range(len(textPart)):
-                proportionsOfOxides.update({textPart[i]: round(float(mathPart[i]), 6)})                
+        if len(text_part) == len(math_part):
+            for i in range(len(text_part)):
+                proportions_of_oxides.update({text_part[i]: round(float(math_part[i]), 6)})                
         else:
             raise NumberOfItemsOnTheListOfOxidesAndCoefficientsIncorrect('Number of items on the list of'\
                 'oxides and coefficients incorrect')
     
-        return proportionsOfOxides
+        return proportions_of_oxides
 
     @classmethod
-    def calculate_proportions_of_atoms(cls,  proportionsOfOxides: dict) -> dict:
+    def calculate_proportions_of_atoms(cls,  proportions_of_oxides: dict) -> dict:
 
-        proportionsOfAtoms = {}
-        for key in proportionsOfOxides.keys():
-            atomDict = cls.calculate_atoms_from_oxide(key)
+        proportions_of_atoms = {}
+        for key in proportions_of_oxides.keys():
+            atom_dict = cls.calculate_atoms_from_oxide(key)
             dict = {}
-            for keyAtomDict in atomDict.keys():
-                dict.update({keyAtomDict: [atomDict[keyAtomDict][0] * proportionsOfOxides[key], *atomDict[keyAtomDict][1:]]})
-            atomDict = dict.copy()
+            for key_atom_dict in atom_dict.keys():
+                dict.update({key_atom_dict: [atom_dict[key_atom_dict][0] * proportions_of_oxides[key], *atom_dict[key_atom_dict][1:]]})
+            atom_dict = dict.copy()
             del dict
 
 
-            for key in atomDict.keys():
-                if key in proportionsOfAtoms.keys():
-                    if atomDict[key][1] == 'Anion':
-                        proportionsOfAtoms[key][0] = proportionsOfAtoms[key][0] + atomDict[key][0]
+            for key in atom_dict.keys():
+                if key in proportions_of_atoms.keys():
+                    if atom_dict[key][1] == 'Anion':
+                        proportions_of_atoms[key][0] = proportions_of_atoms[key][0] + atom_dict[key][0]
                     else:
                         raise Exception(f'Atom {key} in two different oxidation states')
                 else:
-                    proportionsOfAtoms[key] = atomDict[key]
+                    proportions_of_atoms[key] = atom_dict[key]
             
         
-        proportionsOfAtoms = cls.calculate_ratios(proportionsOfAtoms)
+        proportions_of_atoms = cls.calculate_ratios(proportions_of_atoms)
         
-        return proportionsOfAtoms
+        return proportions_of_atoms
 
     @classmethod
     def calculate_atoms_from_oxide(cls, oxide: str) -> dict:
-        def check_cation_or_anion(positionInOxideformula: int) -> str:
-            if positionInOxideformula == 0:
+        def check_cation_or_anion(position_in_oxideormula: int) -> str:
+            if position_in_oxideormula == 0:
                 return 'Cation'
-            elif positionInOxideformula == 1:
+            elif position_in_oxideormula == 1:
                 return 'Anion'  
             else:
                 raise Exception('You can use only simple compound oxide notation eg. Fe2O3 also SiC is correct')  
 
         
-        mathPart = re.split(r"[a-zA-Z]", oxide)
-        textPart = re.split(r"[0-9]", oxide)
+        math_part = re.split(r"[a-zA-Z]", oxide)
+        text_part = re.split(r"[0-9]", oxide)
 
-        mathPart = cls.remove_empty_list_elements(mathPart)
-        textPart = cls.remove_empty_list_elements(textPart)
+        math_part = cls.remove_empty_list_elements(math_part)
+        text_part = cls.remove_empty_list_elements(text_part)
 
 
-        if mathPart != [] and len(mathPart) == len(textPart) and len(mathPart) > 1:
-            oxideDict = {}
-            for i in range(len(textPart)):
+        if math_part != [] and len(math_part) == len(text_part) and len(math_part) > 1:
+            oxide_dict = {}
+            for i in range(len(text_part)):
                 if check_cation_or_anion(i) == 'Cation': 
-                    oxideDict.update({textPart[i]: (cls.round_math_part(mathPart[i]), check_cation_or_anion(i), textPart[i+1],\
-                        Fraction(int(mathPart[i+1]), int(mathPart[i])))})
+                    oxide_dict.update({text_part[i]: (cls.round_math_part(math_part[i]), check_cation_or_anion(i), text_part[i+1],\
+                        Fraction(int(math_part[i+1]), int(math_part[i])))})
                 elif check_cation_or_anion(i) == 'Anion':
-                    oxideDict.update({textPart[i]: (cls.round_math_part(mathPart[i]), check_cation_or_anion(i))})
+                    oxide_dict.update({text_part[i]: (cls.round_math_part(math_part[i]), check_cation_or_anion(i))})
                 else:
                     raise Exception('Wrong oxide notation!!!!')
         else:
-            tempDict = {}
-            for item in textPart:
+            temp_dict = {}
+            for item in text_part:
                 i = 0
                 for character in item:
                     if character.isupper() and i != 0:
-                        beforeCharacter = item[:i]
-                        afterCharacter = item[i:]
-                        if afterCharacter != '' and mathPart == []:
-                            tempDict.update({beforeCharacter: (1, 'Cation', afterCharacter, Fraction(1, 1))})
-                            tempDict.update({afterCharacter: (1, 'Anion')})
-                        elif len(mathPart) == 1:
-                            tempDict.update({beforeCharacter: (1, 'Cation', afterCharacter, Fraction(int(mathPart[0]), 1))})
-                            tempDict.update({afterCharacter: (cls.round_math_part(mathPart[0]), check_cation_or_anion(1))})
+                        before_character = item[:i]
+                        after_character = item[i:]
+                        if after_character != '' and math_part == []:
+                            temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(1, 1))})
+                            temp_dict.update({after_character: (1, 'Anion')})
+                        elif len(math_part) == 1:
+                            temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(int(math_part[0]), 1))})
+                            temp_dict.update({after_character: (cls.round_math_part(math_part[0]), check_cation_or_anion(1))})
                         else: 
                             raise Exception('Wrong oxide name!')
                     i+=1 
-            if tempDict != {}: 
-                oxideDict = tempDict.copy()
+            if temp_dict != {}: 
+                oxide_dict = temp_dict.copy()
             else: 
-                mathPart.append(1)
-                oxideDict = {}
-                for i in range(len(textPart)):
+                math_part.append(1)
+                oxide_dict = {}
+                for i in range(len(text_part)):
                     if check_cation_or_anion(i) == 'Cation': 
-                        oxideDict.update({textPart[i]: (cls.round_math_part(mathPart[i]), check_cation_or_anion(i), textPart[i+1],\
-                            Fraction(int(mathPart[i+1]), int(mathPart[i])))})
+                        oxide_dict.update({text_part[i]: (cls.round_math_part(math_part[i]), check_cation_or_anion(i), text_part[i+1],\
+                            Fraction(int(math_part[i+1]), int(math_part[i])))})
                     elif check_cation_or_anion(i) == 'Anion':
-                        oxideDict.update({textPart[i]: (cls.round_math_part(mathPart[i]), check_cation_or_anion(i))})
+                        oxide_dict.update({text_part[i]: (cls.round_math_part(math_part[i]), check_cation_or_anion(i))})
                     else:
                         raise Exception('Wrong oxide notation!!!!')
 
-            del tempDict
+            del temp_dict
 
-        return oxideDict
+        return oxide_dict
 
     @staticmethod
     def calculate_ratios(dictionary: dict) -> dict:
@@ -508,25 +510,26 @@ class EquationOfMaterial:
 
 
 class CompositionOfMaterial:
-    def __init__(self, proportionsOfAtoms: dict, numberOfAtomsInSystem: int):
-        self.proportionsOfAtoms= proportionsOfAtoms
-        self.numberOfAtomsInSystem = numberOfAtomsInSystem
+    def __init__(self, proportions_of_atoms: dict, number_of_atoms_in_system: int):
+        self.proportions_of_atoms= proportions_of_atoms
+        self.number_of_atoms_in_system = number_of_atoms_in_system
+
     def get_atoms_in_system(self) -> dict:
-        atomsInSystem = {}       
-        for key in self.proportionsOfAtoms.keys():
-            if self.proportionsOfAtoms[key][1] == 'Cation':
-                number = round(self.proportionsOfAtoms[key][0] * self.numberOfAtomsInSystem)
-                anion = self.proportionsOfAtoms[key][2]
-                ratio = self.proportionsOfAtoms[key][3]
+        atoms_in_system = {}       
+        for key in self.proportions_of_atoms.keys():
+            if self.proportions_of_atoms[key][1] == 'Cation':
+                number = round(self.proportions_of_atoms[key][0] * self.number_of_atoms_in_system)
+                anion = self.proportions_of_atoms[key][2]
+                ratio = self.proportions_of_atoms[key][3]
                 while number % ratio.denominator != 0:
                     number +=1
                 
-                atomsInSystem.update({key: number})
-                if (anion in atomsInSystem.keys()):
-                    atomsInSystem[anion] = int(ratio * number) + atomsInSystem[anion]
+                atoms_in_system.update({key: number})
+                if (anion in atoms_in_system.keys()):
+                    atoms_in_system[anion] = int(ratio * number) + atoms_in_system[anion]
                 else:
-                    atomsInSystem[anion] = int(ratio * number)
-        return atomsInSystem
+                    atoms_in_system[anion] = int(ratio * number)
+        return atoms_in_system
 
 
 class IncorectFilePath(Exception):
@@ -538,4 +541,4 @@ class NumberOfItemsOnTheListOfOxidesAndCoefficientsIncorrect(Exception):
 
 
 class Constants: 
-    AvogadroConstant =  6.02214076 * (10 ** 23)
+    avogadro_constant =  6.02214076 * (10 ** 23)

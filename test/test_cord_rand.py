@@ -1,7 +1,6 @@
 import allure
 
 import pytest
-from pytest_mock import mocker
 
 import pandas as pd 
 import numpy as np
@@ -14,9 +13,6 @@ from fractions import Fraction
 
 from main.program import cord_rand
 from mocks import MockFactory
-
-import pyautogui
-
 
 
 class Preconditions:
@@ -31,10 +27,12 @@ class Preconditions:
         path = os.path.join(self.file_path)
         os.mkdir(path)
         yield self.file_path
+
         try:
             shutil.rmtree(self.file_path)
         except:
             pass
+
 
             
 class TestsCompositionOfMaterial:
@@ -42,8 +40,9 @@ class TestsCompositionOfMaterial:
     @allure.description_html("""
     <p>Get atoms in system</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-    'proportionsOfAtoms,numberOfAtomsInSystem,response',
+    'proportions_of_atoms,number_ofAtoms_in_system,response',
     [
         ({'Na': [0.212766, 'Cation', 'O', Fraction(1, 2)],\
             'P': [0.148936, 'Cation', 'O', Fraction(5, 2)],\
@@ -51,13 +50,13 @@ class TestsCompositionOfMaterial:
             'O': [0.574468, 'Anion']}, 1000, {'Na': 214, 'P': 150, 'Fe': 64, 'O': 578})
     ]
     )
-    def test_get_atoms_in_system(self, proportionsOfAtoms, numberOfAtomsInSystem, response):
+    def test_get_atoms_in_system(self, proportions_of_atoms, number_ofAtoms_in_system, response):
         #Given 
-        compositionOfMaterial = cord_rand.CompositionOfMaterial(proportionsOfAtoms, numberOfAtomsInSystem)
+        compositionOfMaterial = cord_rand.CompositionOfMaterial(proportions_of_atoms, number_ofAtoms_in_system)
         #When 
-        atomsInSystem = compositionOfMaterial.get_atoms_in_system()
+        atoms_in_system = compositionOfMaterial.get_atoms_in_system()
         #Then 
-        assert atomsInSystem == response
+        assert atoms_in_system == response
 
 
 class TestEquationOfMaterial:
@@ -66,28 +65,30 @@ class TestEquationOfMaterial:
     @allure.description_html("""
     <p>Get proportions of Oxides from equation</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-    'data,manyGlasses,xValue,respose', 
+    'data,many_glasses,x_value,respose', 
     [
         ('x Na2O ( 1 - x ) ( 0.7 P2O5 0.3 Fe2O3 )', True, 0.5, {'Na2O': 0.5, 'P2O5': 0.35, 'Fe2O3': 0.15}),
         ('0.7 P2O5 0.3 Fe2O3 0.2 Na2O', False, 0.5, {'P2O5': 0.7, 'Fe2O3': 0.3, 'Na2O': 0.2}),
         ('x P2O5 ( 0.8 - x ) Fe2O3 0.2 Na2O', True, 0.5, {'P2O5': 0.5, 'Fe2O3': 0.3, 'Na2O': 0.2})
     ]
     )
-    def test_get_proportions_of_oxides(self, data, manyGlasses, xValue, respose):
+    def test_get_proportions_of_oxides(self, data, many_glasses, x_value, respose):
         #Given
-        foo = cord_rand.EquationOfMaterial(data, manyGlasses, xValue)
+        foo = cord_rand.EquationOfMaterial(data, many_glasses, x_value)
         #When
-        proportionsOfOxides = foo.get_proportions_of_oxides()
+        proportions_of_oxides = foo.get_proportions_of_oxides()
 
         #Then
-        assert respose == proportionsOfOxides
+        assert respose == proportions_of_oxides
 
     
     @allure.title("Calculate atoms from oxide")    
     @allure.description_html("""
     <p>Calculate atoms from oxide</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize('data,result',
     [
         ('Fe2O3',{'Fe': (2, 'Cation', 'O', Fraction(3, 2)), 'O': (3, 'Anion')}),
@@ -101,15 +102,16 @@ class TestEquationOfMaterial:
         #Given
         oxide = data
         #When
-        atomsDict = cord_rand.EquationOfMaterial.calculate_atoms_from_oxide(oxide)
+        atoms_dict = cord_rand.EquationOfMaterial.calculate_atoms_from_oxide(oxide)
         #Then
-        assert atomsDict == result
+        assert atoms_dict == result
     
     
     @allure.title("Calculate proportions of atoms")    
     @allure.description_html("""
     <p>Calculate proportions of atoms from proportion of oxides dictionary</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
         'data,result',
         [
@@ -127,8 +129,9 @@ class TestEquationOfMaterial:
     @allure.description_html("""
     <p>Get proportions of atoms</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-    'data,manyGlasses,xValue,respose', 
+    'data,many_glasses,x_value,respose', 
     [
         ('x Na2O ( 1 - x ) ( 0.7 P2O5 0.3 Fe2O3 )', True, 0.5, {'Na': [0.212766, 'Cation', 'O', Fraction(1, 2)],\
             'P': [0.148936, 'Cation', 'O', Fraction(5, 2)],\
@@ -145,14 +148,14 @@ class TestEquationOfMaterial:
     ]
     )
     
-    def test_get_proportions_of_atoms(self, data, manyGlasses, xValue ,respose):
+    def test_get_proportions_of_atoms(self, data, many_glasses, x_value ,respose):
         #Given
-        foo = cord_rand.EquationOfMaterial(data, manyGlasses, xValue)
+        foo = cord_rand.EquationOfMaterial(data, many_glasses, x_value)
         #When
-        proportionsOfAtoms = foo.get_proportion_of_atoms()
+        proportions_of_atoms = foo.get_proportion_of_atoms()
 
         #Then
-        assert respose == proportionsOfAtoms
+        assert respose == proportions_of_atoms
 
 
 class TestsMaterialsList:
@@ -161,8 +164,9 @@ class TestsMaterialsList:
     @allure.description_html("""
     <p>Test of static method: MaterialsList.read_atoms_masses_from_json_file </p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-    'composition,filePath,response',
+    'composition,file_path,response',
     [
         ({'Na': 214, 'P': 150, 'Fe': 64, 'O': 578}, 'main/program/AtomMass.json',
         {'Na': 22.9898, 'P': 30.9738, 'Fe': 55.845, 'O': 15.9994}),
@@ -170,19 +174,20 @@ class TestsMaterialsList:
         {'Na': 22.9898, 'P': 30.9738, 'FeIII': 55.845, 'O': 15.9994})
     ]
     )
-    def test_read_atoms_masses_from_json_file(self, composition, filePath, response):
+    def test_read_atoms_masses_from_json_file(self, composition, file_path, response):
         #Given #When 
-        dictOfMasses = cord_rand.MaterialsList.read_atoms_masses_from_json_file(composition, filePath)
-        assert dictOfMasses == response
+        dict_of_masses = cord_rand.MaterialsList.read_atoms_masses_from_json_file(composition, file_path)
+        assert dict_of_masses == response
 
     @allure.title("Get list of materials")    
     @allure.description_html("""
     <p>Test of method: MaterialsList.get_list_of_materials </p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-        '''manyglasses,equationOfMaterial,initialValueOfX,
-        stepValue,quantityOfMaterials,quantityOfAtomsInSingleMaterial,
-        GlassesDensities,chargesOfAtoms,path,resultTuple,resultCharges''',
+        '''many_glasses,equation_of_material,initial_value_of_x,
+        step_value,quantity_of_materials,quantity_of_atoms_in_single_material,
+        Glasses_densities,charges_of_atoms,path,result_tuple,result_charges''',
     [
         (True, 'x FeIII2O3 ( 1 - x ) P2O5', 0.2, 0.1, 3, 200, '2.5, 2.6, 2.7', 'FeIII: 3, P: 5, O: -2', 
         'main/program/AtomMass.json',
@@ -193,25 +198,25 @@ class TestsMaterialsList:
         ], {'FeIII': 55.845, 'P': 30.9738, 'O': 15.9994}), {'FeIII': 3, 'P': 5, 'O': -2})
     ]
     )
-    def test_get_list_of_materials(self, mocker, manyglasses, equationOfMaterial, initialValueOfX,
-        stepValue, quantityOfMaterials, quantityOfAtomsInSingleMaterial, GlassesDensities, 
-        chargesOfAtoms, path, resultTuple, resultCharges):
+    def test_get_list_of_materials(self, mocker, many_glasses, equation_of_material, initial_value_of_x,
+        step_value, quantity_of_materials, quantity_of_atoms_in_single_material, Glasses_densities, 
+        charges_of_atoms, path, result_tuple, result_charges):
 
         #Given  
         mock = mocker.Mock(name="MockFactory")
         mock.get_EquationOfMaterial_class.side_effect = MockFactory.get_EquationOfMaterial_class
         mock.get_CompositionOfMaterial_class.side_effect = MockFactory.get_CompositionOfMaterial_class
 
-        materialsList = cord_rand.MaterialsList(mock.get_EquationOfMaterial_class(), mock.get_CompositionOfMaterial_class(),
-            manyglasses, equationOfMaterial, initialValueOfX,stepValue,
-            quantityOfAtomsInSingleMaterial, GlassesDensities, chargesOfAtoms, quantityOfMaterials, path)
+        materials_list = cord_rand.MaterialsList(mock.get_EquationOfMaterial_class(), mock.get_CompositionOfMaterial_class(),
+            many_glasses, equation_of_material, initial_value_of_x,step_value,
+            quantity_of_atoms_in_single_material, Glasses_densities, charges_of_atoms, quantity_of_materials, path)
 
         #When
-        result = materialsList.get_materials_list_and_atom_masses_dict()
+        result = materials_list.get_materials_list_and_atom_masses_dict()
 
         #Then
-        assert result == resultTuple
-        assert materialsList.chargesOfAtoms == resultCharges
+        assert result == result_tuple
+        assert materials_list.charges_of_atoms == result_charges
 
 
 @pytest.mark.usefixtures("setup")
@@ -222,6 +227,7 @@ class TestCreateFoldersAndSubFolders(Preconditions):
     @allure.description_html("""
     <p>Create the correct folder</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     def test_create_correct_folder(self, setup):
         path = setup
         #when
@@ -239,6 +245,7 @@ class TestCreateFoldersAndSubFolders(Preconditions):
     @allure.description_html("""
     <p>Create incorrect folder</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     def test_create_incorrect_folder(self, setup):
         #try
         with pytest.raises(cord_rand.IncorectFilePath):
@@ -249,6 +256,7 @@ class TestCreateFoldersAndSubFolders(Preconditions):
     @allure.description_html("""
     <p>Create directory</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     def test_create_directory(self, setup):
         #Given
         folder = TestCreateFoldersAndSubFolders.test_create_correct_folder(self, setup)
@@ -267,6 +275,7 @@ class TestCreateFoldersAndSubFolders(Preconditions):
     @allure.description_html("""
     <p>Create sub folders</p>
     """)   
+    @allure.severity(allure.severity_level.NORMAL)
     def test_create_sub_folders(self, setup):
 
         #Given
@@ -276,15 +285,15 @@ class TestCreateFoldersAndSubFolders(Preconditions):
 
 
         #when
-        subFoldersList = folder.create_sub_folders()
-        numberOfSubFolders = 3
+        sub_folders_list = folder.create_sub_folders()
+        number_of_sub_folders = 3
 
 
         #then
-        for i in range(1,numberOfSubFolders + 1):
+        for i in range(1,number_of_sub_folders + 1):
             file = 'dane' + str(i)
-            print(subFoldersList)
-            assert os.path.isdir(path +'/Dane/' + file) and subFoldersList
+            print(sub_folders_list)
+            assert os.path.isdir(path +'/Dane/' + file) and sub_folders_list
 
 
 @pytest.mark.usefixtures("setup")
@@ -297,16 +306,17 @@ class TestsCreateFileForLammps(Preconditions):
     @allure.description_html("""
     <p>Crate file with title</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses, atom_id',
+    'name, material, charges, atom_masses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_crate_file_with_title(self, setup, name, material, charges, atomMasses,  atom_id):
+    def test_crate_file_with_title(self, setup, name, material, charges, atom_masses,  atom_id):
         #Given 
         sub_folder_path = setup
-        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path,  atom_id)
+        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atom_masses, sub_folder_path,  atom_id)
 
 
         #When 
@@ -323,18 +333,19 @@ class TestsCreateFileForLammps(Preconditions):
     @allure.description_html("""
     <p>Write quantity of atoms</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses, atom_id',
+    'name, material, charges, atom_masses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_write_quantity_of_atoms(self, setup, name, material, charges, atomMasses, atom_id):
+    def test_write_quantity_of_atoms(self, setup, name, material, charges, atom_masses, atom_id):
 
         #Given 
-        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atomMasses, atom_id)
+        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atom_masses, atom_id)
         sub_folder_path = setup
-        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path, atom_id)
+        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atom_masses, sub_folder_path, atom_id)
 
 
         #When 
@@ -353,19 +364,20 @@ class TestsCreateFileForLammps(Preconditions):
     @allure.description_html("""
     <p>Write number of atom types</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses, atom_id',
+    'name, material, charges, atom_masses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_write_number_of_atom_types(self, setup, name, material, charges, atomMasses, atom_id):
+    def test_write_number_of_atom_types(self, setup, name, material, charges, atom_masses, atom_id):
         #Given 
-        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atomMasses, atom_id)
+        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atom_masses, atom_id)
         sub_folder_path = setup
 
 
-        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path, atom_id)
+        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atom_masses, sub_folder_path, atom_id)
         #When 
         file_for_lammps.write_number_of_atom_types()
 
@@ -382,17 +394,18 @@ class TestsCreateFileForLammps(Preconditions):
     @allure.description_html("""
     <p>Write system coordinates</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses, atom_id',
+    'name, material, charges, atom_masses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_write_system_coordinates(self, setup, name, material, charges, atomMasses, atom_id):
+    def test_write_system_coordinates(self, setup, name, material, charges, atom_masses, atom_id):
         #Given 
-        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atomMasses, atom_id)
+        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atom_masses, atom_id)
         sub_folder_path = setup
-        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path, atom_id)
+        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atom_masses, sub_folder_path, atom_id)
 
 
         #When 
@@ -411,18 +424,19 @@ class TestsCreateFileForLammps(Preconditions):
     @allure.description_html("""
     <p>Write masses of atoms</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses, atom_id',
+    'name, material, charges, atom_masses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_write_masses_of_atoms(self, setup, name, material, charges, atomMasses, atom_id):
+    def test_write_masses_of_atoms(self, setup, name, material, charges, atom_masses, atom_id):
 
         #Given 
-        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atomMasses, atom_id)
+        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atom_masses, atom_id)
         sub_folder_path = setup
-        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path, atom_id)
+        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atom_masses, sub_folder_path, atom_id)
 
 
         #When 
@@ -441,18 +455,19 @@ class TestsCreateFileForLammps(Preconditions):
     @allure.description_html("""
     <p>Write table with atoms positions</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses, atom_id',
+    'name, material, charges, atom_masses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_write_table_with_atoms_positions(self, setup, name, material, charges, atomMasses, atom_id):
+    def test_write_table_with_atoms_positions(self, setup, name, material, charges, atom_masses, atom_id):
 
         #Given 
-        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atomMasses, atom_id)
+        TestsCreateFileForLammps.test_crate_file_with_title(self, setup, name, material, charges, atom_masses, atom_id)
         sub_folder_path = setup
-        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path, atom_id)
+        file_for_lammps = cord_rand.FileForLammps(name, material, charges, atom_masses, sub_folder_path, atom_id)
 
         def get_correct_number_of_atom_types(charges, material):
             correct_values = []
@@ -499,16 +514,17 @@ class TestsCreateFileForLammps(Preconditions):
     @allure.description_html("""
     <p>Write table with atoms positions</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-    'name, material, charges, atomMasses, atom_id',
+    'name, material, charges, atom_masses, atom_id',
     [
         data_for_tests
     ]
     )
-    def test_create_file_with_all_necessary_data(self, setup, name, material, charges, atomMasses, atom_id):
+    def test_create_file_with_all_necessary_data(self, setup, name, material, charges, atom_masses, atom_id):
         #Given 
         sub_folder_path = setup
-        file = cord_rand.FileForLammps(name, material, charges, atomMasses, sub_folder_path, atom_id)
+        file = cord_rand.FileForLammps(name, material, charges, atom_masses, sub_folder_path, atom_id)
 
         #When 
         file.create_complete_file()
@@ -530,8 +546,9 @@ class TestsFilesForLammps(Preconditions):
     @allure.description_html("""
     <p>Create files with data for Lammps simulations in subfolders</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-    "nameOfFolder,prefixOfSubFolder,nrOfSubFoldersFolders,materialsList, atomsMasses,charges",
+    "name_of_folder,prefix_of_sub_folder,nr_of_sub_folders,materials_list, atoms_masses,charges",
         [('Dane', 'dane', 3,
         [ 
             {'composition': {'FeIII': 12, 'O': 138, 'P': 48}, 'quantityOfAtoms': 198, 'volume': 2899.1681},
@@ -541,20 +558,20 @@ class TestsFilesForLammps(Preconditions):
         ]
 
     )
-    def test_make_files(self, setup, nameOfFolder, prefixOfSubFolder, nrOfSubFoldersFolders, materialsList, atomsMasses, charges):
+    def test_make_files(self, setup, name_of_folder, prefix_of_sub_folder, nr_of_sub_folders, materials_list, atoms_masses, charges):
         
         #Given
         path = setup
-        folder = cord_rand.Folder(path, nameOfFolder, prefixOfSubFolder, nrOfSubFoldersFolders)
+        folder = cord_rand.Folder(path, name_of_folder, prefix_of_sub_folder, nr_of_sub_folders)
         folder.create_folders()
-        subfoldersPaths = folder.create_sub_folders()
+        sub_folders_paths = folder.create_sub_folders()
 
         #When 
-        filesForLammps = cord_rand.FilesForLammps(cord_rand.FileForLammps, subfoldersPaths, prefixOfSubFolder, materialsList, atomsMasses, charges)
-        filesForLammps.make_files()
+        files_for_lammps = cord_rand.FilesForLammps(cord_rand.FileForLammps, sub_folders_paths, prefix_of_sub_folder, materials_list, atoms_masses, charges)
+        files_for_lammps.make_files()
 
         #Then
-        for i in range(1,nrOfSubFoldersFolders + 1):
+        for i in range(1,nr_of_sub_folders + 1):
             subFolder = 'dane' + str(i)
             file = 'dane' + str(i)
             assert os.path.exists(path +'/Dane/' + subFolder + '/' + file + '.txt')
@@ -564,8 +581,9 @@ class TestsFilesForLammps(Preconditions):
     @allure.description_html("""
         <p>Get atom names with id from object of class TestsFilesForLammps</p>
         """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-    "nameOfFolder,prefixOfSubFolder,nrOfSubFoldersFolders,materialsList, atomsMasses,charges",
+    "name_of_folder,prefix_of_sub_folder,nr_of_sub_folders,materials_list, atoms_masses,charges",
         [('Dane', 'dane', 3,
         [ 
             {'composition': {'FeIII': 12, 'O': 138, 'P': 48}, 'quantityOfAtoms': 198, 'volume': 2899.1681},
@@ -575,17 +593,17 @@ class TestsFilesForLammps(Preconditions):
         ]
 
     )
-    def test_get_atoms_id(self, setup, nameOfFolder, prefixOfSubFolder, nrOfSubFoldersFolders, materialsList, atomsMasses, charges):
+    def test_get_atoms_id(self, setup, name_of_folder, prefix_of_sub_folder, nr_of_sub_folders, materials_list, atoms_masses, charges):
 
         #Given
         path = setup
-        folder = cord_rand.Folder(path, nameOfFolder, prefixOfSubFolder, nrOfSubFoldersFolders)
+        folder = cord_rand.Folder(path, name_of_folder, prefix_of_sub_folder, nr_of_sub_folders)
         folder.create_folders()
-        subfoldersPaths = folder.create_sub_folders()
-        filesForLammps = cord_rand.FilesForLammps(cord_rand.FileForLammps, subfoldersPaths, prefixOfSubFolder, materialsList, atomsMasses, charges)
+        sub_folders_paths = folder.create_sub_folders()
+        files_for_lammps = cord_rand.FilesForLammps(cord_rand.FileForLammps, sub_folders_paths, prefix_of_sub_folder, materials_list, atoms_masses, charges)
 
         #When 
-        atoms_names_with_id = filesForLammps.get_atoms_id()
+        atoms_names_with_id = files_for_lammps.get_atoms_id()
 
         #Then 
         assert atoms_names_with_id == {'FeIII': 1, 'P': 2, 'O': 3}
@@ -598,6 +616,7 @@ class TestFileWithAtomsId(Preconditions):
     @allure.description_html("""
     <p>Test of method create_file for class FileWithAtomsId</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
         'atoms_id',
         [({'FeIII': 1, 'P': 2, 'O': 3})]
@@ -620,25 +639,26 @@ class TestsApp(Preconditions):
     @allure.description_html("""
     <p>Create folders with data for Lammps App test, integration test</p>
     """)
+    @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.parametrize(
-        'nameOfFolder,prefixSubFolder,equation, manyGlasses,atomsInSingleMaterial,'\
-        'strDensityList, strCharges, initX, stepX, quantityOfMaterials, file_json_path',
+        'name_of_folder,prefix_sub_folder,equation, many_glasses,atoms_in_single_material,'\
+        'str_density_list, str_charges, init_x, step_x, quantity_of_materials, file_json_path',
         [('Test', 'Test', 'x Na2O (1 - x ) ( 0.3 Fe2O3 0.7 P2O5 )',
         True, 10000, '3, 2.7, 2.6, 2.5, 2.4', 'Fe: 3, P: 5, Na: 1, O: -2', 
         0, 0.1, 5, 'main/program/AtomMass.json')]
     )
-    def test_make_folders_with_data_for_lammps(self, setup, nameOfFolder, prefixSubFolder, equation, manyGlasses,
-        atomsInSingleMaterial, strDensityList, strCharges, initX, stepX, quantityOfMaterials, file_json_path):
+    def test_make_folders_with_data_for_lammps(self, setup, name_of_folder, prefix_sub_folder, equation, many_glasses,
+        atoms_in_single_material, str_density_list, str_charges, init_x, step_x, quantity_of_materials, file_json_path):
 
         #Given
         app = cord_rand.App()
         app.set_directory(setup)
 
         #When
-        app.make_folders_with_data_for_lammps(nameOfFolder, prefixSubFolder, equation, manyGlasses,
-        atomsInSingleMaterial, strDensityList, strCharges, initX, stepX, quantityOfMaterials, file_json=file_json_path)
+        app.make_folders_with_data_for_lammps(name_of_folder, prefix_sub_folder, equation, many_glasses,
+        atoms_in_single_material, str_density_list, str_charges, init_x, step_x, quantity_of_materials, file_json=file_json_path)
 
         #Then 
-        assert os.path.isfile(setup + '/' + nameOfFolder + '/' + prefixSubFolder + '1' + '/' + prefixSubFolder + '1.txt')
+        assert os.path.isfile(setup + '/' + name_of_folder + '/' + prefix_sub_folder + '1' + '/' + prefix_sub_folder + '1.txt')
 
         
