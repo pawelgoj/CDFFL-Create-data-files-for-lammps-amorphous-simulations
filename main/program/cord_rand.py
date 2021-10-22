@@ -1,6 +1,8 @@
+"""
+@author: Pawel Goj
+"""
 import os
 import re
-import json
 from fractions import Fraction
 from random import random
 from typing import Optional 
@@ -10,6 +12,8 @@ try:
     from program.config import Config
 except:
     from main.program.config import Config
+
+import json
 
 PATH = Config.PATH_TO_JSON_FILE_WITH_MASSES
 

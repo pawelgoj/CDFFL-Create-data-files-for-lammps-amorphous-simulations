@@ -1,3 +1,6 @@
+"""
+@author: Pawel Goj
+"""
 import webbrowser
 
 
