@@ -1,4 +1,4 @@
-from main import cord_rand
+from main.program import cord_rand
 
 class MockFactory:
     @staticmethod
