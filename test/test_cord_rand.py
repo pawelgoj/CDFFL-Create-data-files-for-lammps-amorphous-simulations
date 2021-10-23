@@ -1,3 +1,6 @@
+"""
+@author: Pawel Goj
+"""
 import allure
 
 import pytest
@@ -223,7 +226,7 @@ class TestsMaterialsList:
 class TestCreateFoldersAndSubFolders(Preconditions):
 
     #Decorator for allure 
-    @allure.title("Create directory")
+    @allure.title("Create correct folder")
     @allure.description_html("""
     <p>Create the correct folder</p>
     """)
@@ -254,7 +257,7 @@ class TestCreateFoldersAndSubFolders(Preconditions):
 
     @allure.title("Create directory") 
     @allure.description_html("""
-    <p>Create directory</p>
+    <p>Create directory on the disc</p>
     """)
     @allure.severity(allure.severity_level.NORMAL)
     def test_create_directory(self, setup):
@@ -271,7 +274,7 @@ class TestCreateFoldersAndSubFolders(Preconditions):
         assert os.path.isdir(path  + '/Dane')
 
 
-    @allure.title("Create sub folders")    
+    @allure.title("Create sub folders on the disc")    
     @allure.description_html("""
     <p>Create sub folders</p>
     """)   

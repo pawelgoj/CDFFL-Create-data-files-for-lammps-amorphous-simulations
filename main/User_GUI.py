@@ -1,3 +1,6 @@
+"""
+@author: Pawel Goj
+"""
 import tkinter as tk
 import tkinter.font as font
 from tkinter import BaseWidget, Misc, ttk
@@ -8,9 +11,6 @@ from program.cord_rand import *
 from program.config import Config
 
 from program.menu_functions import MenuFunctions
-
-
-
 
 PATH_TO_IMAGES = Config.PATH_TO_IMAGE
 
@@ -160,7 +160,7 @@ class AppliactionCFWDFL(tk.Tk):
         self.background_color = {'bg': background_color}
         super().__init__()
         #Title of application
-        self.title('CFWDFL_make_imput_files_for_LAMMPS')
+        self.title('CDFFL')
         self.appname = 'CFWDFL'
         #ico
         self.iconphoto(False, tk.PhotoImage(file=(PATH_TO_IMAGES + 'image/icon.png')))

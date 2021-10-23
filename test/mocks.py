@@ -1,3 +1,6 @@
+"""
+@author: Pawel Goj
+"""
 from main.program import cord_rand
 
 class MockFactory:
