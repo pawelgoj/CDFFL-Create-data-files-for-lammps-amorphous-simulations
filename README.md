@@ -6,7 +6,8 @@ CDFFL application creates folders with starting data with random position of the
 
 ![Window of app CDFFL](image.png "Window of app CDFFL")
 ## Usage 
-If you use CDFFL.exe for widows run program CDFFL.exe in folder. Complete the form and run application by `<Start>` button. Folders with data will appear in the previously chosen directory. Now you can add your starting data created by CDFFL (your_starting_data.txt) to your Lammps script e.g.:
+If you want to use exe file for windows download CDFFL.rar (find it in Releases) and unpack it.
+Run program CDFFL.exe in unpacked folder. Complete the form and run application by `<Start>` button. Folders with data will appear in the previously chosen directory. Now you can add your starting data created by CDFFL (your_starting_data.txt) to your Lammps script e.g.:
 
 ```
 atom_style	charge
