@@ -278,11 +278,11 @@ class AppliactionCFWDFL(tk.Tk):
 
         #Instruction for user 
         self.instructions_2 = MessageInApp(frame, width=800, fg='black',  font=fontmessage_box,
-            text="The glass quation should be written as follows: \n" \
+            text="The quation of glasses should be written as follows: \n" \
             "  x Na2O (1 - x ) ( 0.3 Fe2O3 0.7 P2O5 ) \n" \
             "\nRemember about spaces!\n" \
             "There are molar ratios in the formula.\n" \
-            "If on glass insert simple equation: \n  eg. 0.3 Fe2O3 0.7 P2O5" )
+            "If one glass, insert simple equation: \n  eg. 0.3 Fe2O3 0.7 P2O5" )
 
         self.instructions_2.grid(paddings, row = 5, column = 2, sticky = 'w', columnspan=4)
 
