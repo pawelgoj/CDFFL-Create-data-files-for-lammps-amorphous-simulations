@@ -6,7 +6,7 @@ CDFFLthe application creates folders with files containing start data for Lammps
 
 ![Window of app CDFFL](image.png "Window of app CDFFL")
 ## Usage 
-If you want to use exe file for windows download CDFFL.rar (find it in Releases) and unpack it.
+If you want to use exe file for windows download CDFFL.zip (find it in Releases) and unpack it.
 Run program CDFFL.exe in unpacked folder. Complete the form and run application by `<Start>` button. Folders with data will appear in the previously chosen directory. Now you can add your starting data created by CDFFL to your Lammps script e.g.:
 
 ```
