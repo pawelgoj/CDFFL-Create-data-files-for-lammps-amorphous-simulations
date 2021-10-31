@@ -76,7 +76,8 @@ class TestEquationOfMaterial:
         ('0.7 P2O5 0.3 Fe2O3 0.2 Na2O', False, 0.5, {'P2O5': 0.7, 'Fe2O3': 0.3, 'Na2O': 0.2}),
         ('x P2O5 ( 0.8 - x ) Fe2O3 0.2 Na2O', True, 0.5, {'P2O5': 0.5, 'Fe2O3': 0.3, 'Na2O': 0.2}),
         ('x Na2O ( 1 - x ) ( 0.7 P2O5 0.3 FeIII2O3 )', True, 0.5, {'Na2O': 0.5, 'P2O5': 0.35, 'FeIII2O3': 0.15}),
-        ('x Na2O ( 1 - x ) ( 0.7 P2O5 0.3 FeIIO )', True, 0.5, {'Na2O': 0.5, 'P2O5': 0.35, 'FeIIO': 0.15})
+        ('x Na2O ( 1 - x ) ( 0.7 P2O5 0.3 FeIIO )', True, 0.5, {'Na2O': 0.5, 'P2O5': 0.35, 'FeIIO': 0.15}),
+        ('x FeIIO ( 0.3 - x ) FeIII2O3 0.7 P2O5', True, 0.3, {'P2O5': 0.7, 'FeIII2O3': 0, 'FeIIO': 0.3})
     ]
     )
     def test_get_proportions_of_oxides(self, data, many_glasses, x_value, respose):

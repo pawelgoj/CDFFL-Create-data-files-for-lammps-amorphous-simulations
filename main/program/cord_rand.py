@@ -138,6 +138,7 @@ class FileForLammps:
 
         self.quantity = material['quantityOfAtoms']
         self.composition = material['composition'].copy()
+        print(self.composition)
 
     def crate_file_with_title(self):
         with open(f'{self.path}.txt', 'x') as file:
@@ -172,20 +173,30 @@ class FileForLammps:
             
             random_cord = lambda: round(random() * self.length_of_simulation_box_edge, 6)
             number = 0
-            for i in range(1, self.quantity+1):
-                if number == 0:
+
+            i = 1
+            
+            while i < self.quantity + 1:
+                if number <= 0:
                     item = self.composition.popitem()
+                    print(item)
                     number = item[1]
                     atom = item[0]
+                    print(atom)
                     id = self.charges[atom]['id']
                     charge = self.charges[atom]['charge']
 
-                x = random_cord()
-                y = random_cord()
-                z = random_cord()
+                if number != 0:
+                    x = random_cord()
+                    y = random_cord()
+                    z = random_cord()
 
-                file.write(f'{i} {id} {charge} {x} {y} {z}\n')
+                    file.write(f'{i} {id} {charge} {x} {y} {z}\n')
 
+                elif i > 1:
+                    i-=1
+
+                i+=1
                 number-=1
 
     def create_complete_file(self):
@@ -255,7 +266,7 @@ class MaterialsList:
             volume = round(( mass_of_material / self.glasses_densities[i] ) * ((10 ** 8) ** 3), 4)
             materials_list.append({'composition': composition, 'quantityOfAtoms': quantity_of_all_atoms, 'volume': volume })
             i += 1
-
+            print(materials_list)
         return materials_list, atoms_masses
     
     def get_charges(self):
@@ -397,6 +408,9 @@ class EquationOfMaterial:
         else:
             raise NumberOfItemsOnTheListOfOxidesAndCoefficientsIncorrect('Number of items on the list of'\
                 'oxides and coefficients incorrect')
+
+        
+        print(proportions_of_oxides)
     
         return proportions_of_oxides
 
@@ -424,6 +438,7 @@ class EquationOfMaterial:
             
         
         proportions_of_atoms = cls.calculate_ratios(proportions_of_atoms)
+        print(proportions_of_atoms)
         
         return proportions_of_atoms
 
