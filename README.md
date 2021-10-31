@@ -41,4 +41,3 @@ I use Test-driven development technique for develope this program. You can find 
 2. **allure** - for create raport 
 3. **appium** with **WinAppDriver** - for GUI test 
 4. **numpy** and **pandas** - for data preparation
-
