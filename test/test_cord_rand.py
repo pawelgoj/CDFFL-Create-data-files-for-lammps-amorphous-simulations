@@ -174,7 +174,9 @@ class TestsMaterialsList:
         ({'Na': 214, 'P': 150, 'Fe': 64, 'O': 578}, 'main/program/AtomMass.json',
         {'Na': 22.9898, 'P': 30.9738, 'Fe': 55.845, 'O': 15.9994}),
         ({'Na': 214, 'P': 150, 'FeIII': 64, 'O': 578}, 'main/program/AtomMass.json',
-        {'Na': 22.9898, 'P': 30.9738, 'FeIII': 55.845, 'O': 15.9994})
+        {'Na': 22.9898, 'P': 30.9738, 'FeIII': 55.845, 'O': 15.9994}),
+        ({'Na': 214, 'P': 150, 'FeII': 64, 'O': 578}, 'main/program/AtomMass.json',
+        {'Na': 22.9898, 'P': 30.9738, 'FeII': 55.845, 'O': 15.9994})
     ]
     )
     def test_read_atoms_masses_from_json_file(self, composition, file_path, response):
@@ -648,7 +650,17 @@ class TestsApp(Preconditions):
         'str_density_list, str_charges, init_x, step_x, quantity_of_materials, file_json_path',
         [('Test', 'Test', 'x Na2O (1 - x ) ( 0.3 Fe2O3 0.7 P2O5 )',
         True, 10000, '3, 2.7, 2.6, 2.5, 2.4', 'Fe: 3, P: 5, Na: 1, O: -2', 
-        0, 0.1, 5, 'main/program/AtomMass.json')]
+        0, 0.1, 5, 'main/program/AtomMass.json'),
+        ('Test', 'Test', 'x Na2O (1 - x ) ( 0.3 FeIII2O3 0.7 P2O5 )',
+        True, 10000, '3, 2.7, 2.6, 2.5, 2.4', 'FeIII: 3, P: 5, Na: 1, O: -2', 
+        0, 0.1, 5, 'main/program/AtomMass.json'),
+        ('Test', 'Test', 'x Na2O (1 - x ) ( 0.3 FeIIO 0.7 P2O5 )',
+        True, 10000, '3, 2.7, 2.6, 2.5, 2.4', 'FeII: 2, P: 5, Na: 1, O: -2', 
+        0, 0.1, 5, 'main/program/AtomMass.json'),
+        ('Test', 'Test', 'x Na2O (1 - x ) ( 0.1 FeIIO 0.3 FeIII2O3 0.7 P2O5 )',
+        True, 10000, '3, 2.7, 2.6, 2.5, 2.4', 'FeIII: 3, FeII: 2, P: 5, Na: 1, O: -2', 
+        0, 0.1, 5, 'main/program/AtomMass.json')             
+        ]
     )
     def test_make_folders_with_data_for_lammps(self, setup, name_of_folder, prefix_sub_folder, equation, many_glasses,
         atoms_in_single_material, str_density_list, str_charges, init_x, step_x, quantity_of_materials, file_json_path):
