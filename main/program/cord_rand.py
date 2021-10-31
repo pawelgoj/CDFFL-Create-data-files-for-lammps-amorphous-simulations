@@ -464,8 +464,13 @@ class EquationOfMaterial:
                         before_character = item[:i]
                         after_character = item[i:]
                         if after_character != '' and math_part == []:
-                            temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(1, 1))})
-                            temp_dict.update({after_character: (1, 'Anion')})
+                            if temp_dict == {}:
+                                temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(1, 1))})
+                                temp_dict.update({after_character: (1, 'Anion')})
+                            else:
+                                temp_dict = {}
+                                temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(1, 1))})
+                                temp_dict.update({after_character: (1, 'Anion')})
                         elif len(math_part) == 1:
                             temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(int(math_part[0]), 1))})
                             temp_dict.update({after_character: (cls.round_math_part(math_part[0]), check_cation_or_anion(1))})
