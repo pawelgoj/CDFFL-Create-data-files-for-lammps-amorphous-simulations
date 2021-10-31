@@ -172,20 +172,28 @@ class FileForLammps:
             
             random_cord = lambda: round(random() * self.length_of_simulation_box_edge, 6)
             number = 0
-            for i in range(1, self.quantity+1):
-                if number == 0:
+
+            i = 1
+
+            while i < self.quantity + 1:
+                if number <= 0:
                     item = self.composition.popitem()
                     number = item[1]
                     atom = item[0]
                     id = self.charges[atom]['id']
                     charge = self.charges[atom]['charge']
 
-                x = random_cord()
-                y = random_cord()
-                z = random_cord()
+                if number != 0:
+                    x = random_cord()
+                    y = random_cord()
+                    z = random_cord()
 
-                file.write(f'{i} {id} {charge} {x} {y} {z}\n')
+                    file.write(f'{i} {id} {charge} {x} {y} {z}\n')
 
+                elif i > 1:
+                    i-=1
+
+                i+=1
                 number-=1
 
     def create_complete_file(self):
@@ -255,7 +263,6 @@ class MaterialsList:
             volume = round(( mass_of_material / self.glasses_densities[i] ) * ((10 ** 8) ** 3), 4)
             materials_list.append({'composition': composition, 'quantityOfAtoms': quantity_of_all_atoms, 'volume': volume })
             i += 1
-
         return materials_list, atoms_masses
     
     def get_charges(self):
@@ -397,6 +404,8 @@ class EquationOfMaterial:
         else:
             raise NumberOfItemsOnTheListOfOxidesAndCoefficientsIncorrect('Number of items on the list of'\
                 'oxides and coefficients incorrect')
+
+        
     
         return proportions_of_oxides
 
@@ -422,7 +431,6 @@ class EquationOfMaterial:
                 else:
                     proportions_of_atoms[key] = atom_dict[key]
             
-        
         proportions_of_atoms = cls.calculate_ratios(proportions_of_atoms)
         
         return proportions_of_atoms
@@ -457,6 +465,7 @@ class EquationOfMaterial:
                     raise Exception('Wrong oxide notation!!!!')
         else:
             temp_dict = {}
+            j = 0
             for item in text_part:
                 i = 0
                 for character in item:
@@ -464,11 +473,23 @@ class EquationOfMaterial:
                         before_character = item[:i]
                         after_character = item[i:]
                         if after_character != '' and math_part == []:
-                            temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(1, 1))})
-                            temp_dict.update({after_character: (1, 'Anion')})
+                            if temp_dict == {}:
+                                temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(1, 1))})
+                                temp_dict.update({after_character: (1, 'Anion')})
+                            else:
+                                temp_dict = {}
+                                temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(1, 1))})
+                                temp_dict.update({after_character: (1, 'Anion')})
+
                         elif len(math_part) == 1:
-                            temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(int(math_part[0]), 1))})
-                            temp_dict.update({after_character: (cls.round_math_part(math_part[0]), check_cation_or_anion(1))})
+                            if len(text_part) == 1:
+                                if temp_dict == {}:
+                                    temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(int(math_part[0]), 1))})
+                                    temp_dict.update({after_character: (cls.round_math_part(math_part[0]), check_cation_or_anion(1))})
+                                else:
+                                    temp_dict = {}
+                                    temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(int(math_part[0]), 1))})
+                                    temp_dict.update({after_character: (cls.round_math_part(math_part[0]), check_cation_or_anion(1))})
                         else: 
                             raise Exception('Wrong oxide name!')
                     i+=1 
