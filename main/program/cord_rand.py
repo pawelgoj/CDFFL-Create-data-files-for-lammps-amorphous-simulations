@@ -138,7 +138,6 @@ class FileForLammps:
 
         self.quantity = material['quantityOfAtoms']
         self.composition = material['composition'].copy()
-        print(self.composition)
 
     def crate_file_with_title(self):
         with open(f'{self.path}.txt', 'x') as file:
@@ -175,14 +174,12 @@ class FileForLammps:
             number = 0
 
             i = 1
-            
+
             while i < self.quantity + 1:
                 if number <= 0:
                     item = self.composition.popitem()
-                    print(item)
                     number = item[1]
                     atom = item[0]
-                    print(atom)
                     id = self.charges[atom]['id']
                     charge = self.charges[atom]['charge']
 
@@ -266,7 +263,6 @@ class MaterialsList:
             volume = round(( mass_of_material / self.glasses_densities[i] ) * ((10 ** 8) ** 3), 4)
             materials_list.append({'composition': composition, 'quantityOfAtoms': quantity_of_all_atoms, 'volume': volume })
             i += 1
-            print(materials_list)
         return materials_list, atoms_masses
     
     def get_charges(self):
@@ -410,7 +406,6 @@ class EquationOfMaterial:
                 'oxides and coefficients incorrect')
 
         
-        print(proportions_of_oxides)
     
         return proportions_of_oxides
 
@@ -436,9 +431,7 @@ class EquationOfMaterial:
                 else:
                     proportions_of_atoms[key] = atom_dict[key]
             
-        
         proportions_of_atoms = cls.calculate_ratios(proportions_of_atoms)
-        print(proportions_of_atoms)
         
         return proportions_of_atoms
 
