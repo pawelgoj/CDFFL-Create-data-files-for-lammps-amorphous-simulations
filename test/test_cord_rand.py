@@ -74,7 +74,10 @@ class TestEquationOfMaterial:
     [
         ('x Na2O ( 1 - x ) ( 0.7 P2O5 0.3 Fe2O3 )', True, 0.5, {'Na2O': 0.5, 'P2O5': 0.35, 'Fe2O3': 0.15}),
         ('0.7 P2O5 0.3 Fe2O3 0.2 Na2O', False, 0.5, {'P2O5': 0.7, 'Fe2O3': 0.3, 'Na2O': 0.2}),
-        ('x P2O5 ( 0.8 - x ) Fe2O3 0.2 Na2O', True, 0.5, {'P2O5': 0.5, 'Fe2O3': 0.3, 'Na2O': 0.2})
+        ('x P2O5 ( 0.8 - x ) Fe2O3 0.2 Na2O', True, 0.5, {'P2O5': 0.5, 'Fe2O3': 0.3, 'Na2O': 0.2}),
+        ('x Na2O ( 1 - x ) ( 0.7 P2O5 0.3 FeIII2O3 )', True, 0.5, {'Na2O': 0.5, 'P2O5': 0.35, 'FeIII2O3': 0.15}),
+        ('x Na2O ( 1 - x ) ( 0.7 P2O5 0.3 FeIIO )', True, 0.5, {'Na2O': 0.5, 'P2O5': 0.35, 'FeIIO': 0.15}),
+        ('x FeIIO ( 0.3 - x ) FeIII2O3 0.7 P2O5', True, 0.3, {'P2O5': 0.7, 'FeIII2O3': 0, 'FeIIO': 0.3})
     ]
     )
     def test_get_proportions_of_oxides(self, data, many_glasses, x_value, respose):
@@ -95,11 +98,18 @@ class TestEquationOfMaterial:
     @pytest.mark.parametrize('data,result',
     [
         ('Fe2O3',{'Fe': (2, 'Cation', 'O', Fraction(3, 2)), 'O': (3, 'Anion')}),
+        ('FeIII2O3',{'FeIII': (2, 'Cation', 'O', Fraction(3, 2)), 'O': (3, 'Anion')}),
+        ('FeIIO',{'FeII': (1, 'Cation', 'O', Fraction(1, 1)), 'O': (1, 'Anion')}),
+        ('FeII1O',{'FeII': (1, 'Cation', 'O', Fraction(1, 1)), 'O': (1, 'Anion')}),
         ('Na2O',{'Na': (2, 'Cation', 'O', Fraction(1, 2)), 'O': (1, 'Anion')}),
         ('CaO',{'Ca': (1, 'Cation', 'O', Fraction(1, 1)), 'O': (1, 'Anion')}),
         ('CO',{'C': (1, 'Cation', 'O', Fraction(1, 1)), 'O': (1, 'Anion')}),
         ('CO2', {'C': (1, 'Cation', 'O', Fraction(2, 1)), 'O': (2, 'Anion')}),
-        ('SiC', {'Si': (1, 'Cation', 'C', Fraction(1, 1)), 'C': (1, 'Anion')})
+        ('SiC', {'Si': (1, 'Cation', 'C', Fraction(1, 1)), 'C': (1, 'Anion')}),
+        ('NaCl', {'Na': (1, 'Cation', 'Cl', Fraction(1, 1)), 'Cl': (1, 'Anion')}),
+        ('FeCl3', {'Fe': (1, 'Cation', 'Cl', Fraction(3, 1)), 'Cl': (3, 'Anion')}),
+        ('FeIVO2', {'FeIV': (1, 'Cation', 'O', Fraction(2, 1)), 'O': (2, 'Anion')}),
+        ('CaII1O', {'CaII': (1, 'Cation', 'O', Fraction(1, 1)), 'O': (1, 'Anion')})
     ])
     def test_calculate_atoms_from_oxide(self, data, result):
         #Given
@@ -174,7 +184,11 @@ class TestsMaterialsList:
         ({'Na': 214, 'P': 150, 'Fe': 64, 'O': 578}, 'main/program/AtomMass.json',
         {'Na': 22.9898, 'P': 30.9738, 'Fe': 55.845, 'O': 15.9994}),
         ({'Na': 214, 'P': 150, 'FeIII': 64, 'O': 578}, 'main/program/AtomMass.json',
-        {'Na': 22.9898, 'P': 30.9738, 'FeIII': 55.845, 'O': 15.9994})
+        {'Na': 22.9898, 'P': 30.9738, 'FeIII': 55.845, 'O': 15.9994}),
+        ({'Na': 214, 'P': 150, 'FeII': 64, 'O': 578}, 'main/program/AtomMass.json',
+        {'Na': 22.9898, 'P': 30.9738, 'FeII': 55.845, 'O': 15.9994}),
+        ({'Na': 214, 'P': 150, 'FeII': 64, 'FeIII': 64, 'O': 578}, 'main/program/AtomMass.json',
+        {'Na': 22.9898, 'P': 30.9738, 'FeII': 55.845, 'FeIII': 55.845, 'O': 15.9994})
     ]
     )
     def test_read_atoms_masses_from_json_file(self, composition, file_path, response):
@@ -648,7 +662,17 @@ class TestsApp(Preconditions):
         'str_density_list, str_charges, init_x, step_x, quantity_of_materials, file_json_path',
         [('Test', 'Test', 'x Na2O (1 - x ) ( 0.3 Fe2O3 0.7 P2O5 )',
         True, 10000, '3, 2.7, 2.6, 2.5, 2.4', 'Fe: 3, P: 5, Na: 1, O: -2', 
-        0, 0.1, 5, 'main/program/AtomMass.json')]
+        0, 0.1, 5, 'main/program/AtomMass.json'),
+        ('Test', 'Test', 'x Na2O (1 - x ) ( 0.3 FeIII2O3 0.7 P2O5 )',
+        True, 10000, '3, 2.7, 2.6, 2.5, 2.4', 'FeIII: 3, P: 5, Na: 1, O: -2', 
+        0, 0.1, 5, 'main/program/AtomMass.json'),
+        ('Test', 'Test', 'x Na2O (1 - x ) ( 0.3 FeIIO 0.7 P2O5 )',
+        True, 10000, '3, 2.7, 2.6, 2.5, 2.4', 'FeII: 2, P: 5, Na: 1, O: -2', 
+        0, 0.1, 5, 'main/program/AtomMass.json'),
+        ('Test', 'Test', 'x Na2O (1 - x ) ( 0.1 FeIIO 0.3 FeIII2O3 0.7 P2O5 )',
+        True, 10000, '3, 2.7, 2.6, 2.5, 2.4', 'FeIII: 3, FeII: 2, P: 5, Na: 1, O: -2', 
+        0, 0.1, 5, 'main/program/AtomMass.json')             
+        ]
     )
     def test_make_folders_with_data_for_lammps(self, setup, name_of_folder, prefix_sub_folder, equation, many_glasses,
         atoms_in_single_material, str_density_list, str_charges, init_x, step_x, quantity_of_materials, file_json_path):
