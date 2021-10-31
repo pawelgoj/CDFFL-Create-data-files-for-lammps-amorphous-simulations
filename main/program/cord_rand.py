@@ -457,6 +457,7 @@ class EquationOfMaterial:
                     raise Exception('Wrong oxide notation!!!!')
         else:
             temp_dict = {}
+            j = 0
             for item in text_part:
                 i = 0
                 for character in item:
@@ -471,9 +472,16 @@ class EquationOfMaterial:
                                 temp_dict = {}
                                 temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(1, 1))})
                                 temp_dict.update({after_character: (1, 'Anion')})
+
                         elif len(math_part) == 1:
-                            temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(int(math_part[0]), 1))})
-                            temp_dict.update({after_character: (cls.round_math_part(math_part[0]), check_cation_or_anion(1))})
+                            if len(text_part) == 1:
+                                if temp_dict == {}:
+                                    temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(int(math_part[0]), 1))})
+                                    temp_dict.update({after_character: (cls.round_math_part(math_part[0]), check_cation_or_anion(1))})
+                                else:
+                                    temp_dict = {}
+                                    temp_dict.update({before_character: (1, 'Cation', after_character, Fraction(int(math_part[0]), 1))})
+                                    temp_dict.update({after_character: (cls.round_math_part(math_part[0]), check_cation_or_anion(1))})
                         else: 
                             raise Exception('Wrong oxide name!')
                     i+=1 

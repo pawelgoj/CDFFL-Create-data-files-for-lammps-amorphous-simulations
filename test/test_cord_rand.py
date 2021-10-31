@@ -104,7 +104,11 @@ class TestEquationOfMaterial:
         ('CaO',{'Ca': (1, 'Cation', 'O', Fraction(1, 1)), 'O': (1, 'Anion')}),
         ('CO',{'C': (1, 'Cation', 'O', Fraction(1, 1)), 'O': (1, 'Anion')}),
         ('CO2', {'C': (1, 'Cation', 'O', Fraction(2, 1)), 'O': (2, 'Anion')}),
-        ('SiC', {'Si': (1, 'Cation', 'C', Fraction(1, 1)), 'C': (1, 'Anion')})
+        ('SiC', {'Si': (1, 'Cation', 'C', Fraction(1, 1)), 'C': (1, 'Anion')}),
+        ('NaCl', {'Na': (1, 'Cation', 'Cl', Fraction(1, 1)), 'Cl': (1, 'Anion')}),
+        ('FeCl3', {'Fe': (1, 'Cation', 'Cl', Fraction(3, 1)), 'Cl': (3, 'Anion')}),
+        ('FeIVO2', {'FeIV': (1, 'Cation', 'O', Fraction(2, 1)), 'O': (2, 'Anion')}),
+        ('CaII1O', {'CaII': (1, 'Cation', 'O', Fraction(1, 1)), 'O': (1, 'Anion')})
     ])
     def test_calculate_atoms_from_oxide(self, data, result):
         #Given
