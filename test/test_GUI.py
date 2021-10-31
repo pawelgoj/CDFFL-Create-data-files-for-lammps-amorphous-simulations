@@ -10,7 +10,7 @@ from test_cord_rand import Preconditions
 import os 
 import base64
 
-@pytest.mark.skip("Not jet GUI tests")
+
 @pytest.mark.usefixtures("setup")
 class TestUserGUI(Preconditions):
 
