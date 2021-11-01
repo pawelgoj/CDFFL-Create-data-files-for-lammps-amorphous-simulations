@@ -1,7 +1,7 @@
 # CDFFL-Create-data-files-for-lammps-amorphous-simulations
 
 ## Description 
-CDFFLthe application creates folders with files containing start data for Lammps (https://www.lammps.org/) simulations. In the starting data, the atoms are placed randomly in the simulation box. This can be useful when simulating glasses or amorphous materials. You just need to enter an oxide formula that specifies the composition of the materials you want to simulate. It is a very quick and convenient solution. You don't need to calculate the quantity of specyfic atoms for each material in series.
+CDFFL the application creates folders with files containing start data for Lammps (https://www.lammps.org/) simulations. In the starting data, the atoms are placed randomly in the simulation box. This can be useful when simulating glasses or amorphous materials. You just need to enter an oxide formula that specifies the composition of the materials you want to simulate. It is a very quick and convenient solution. You don't need to calculate the quantity of specyfic atoms for each material in series.
 
 
 ![Window of app CDFFL](image.png "Window of app CDFFL")
